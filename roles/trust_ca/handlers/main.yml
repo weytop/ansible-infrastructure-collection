@@ -1,0 +1,9 @@
+---
+# handlers file for trust-ca
+- name: Update trusted CA
+  ansible.builtin.command: update-ca-certificates
+  register: update_ca_certificates
+  changed_when: update_ca_certificates.rc == 0
+  tags:
+    - trust-ca
+    - trust-ca-update

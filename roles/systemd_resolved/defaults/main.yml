@@ -1,0 +1,9 @@
+---
+# defaults file for systemd-resolved
+systemd_resolved_dns_stub_listener_enabled: false
+systemd_resolved_enabled: true
+systemd_resolved_replace_dns: false
+systemd_resolved_replace_dns_list:
+  - 8.8.8.8
+  - 1.1.1.1
+systemd_resolved_replace_search: "weytop.com"

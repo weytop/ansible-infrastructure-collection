@@ -1,0 +1,71 @@
+---
+# tasks file for ca-certificates
+- name: Create private key for certificate
+  community.crypto.openssl_privatekey:
+    path: "{{ ca_certificates_key }}"
+  tags:
+    - ca-certificates
+    - ca-certificates-private-key-create
+- name: Create private key for certificate
+  ansible.builtin.file:
+    state: file
+    path: "{{ ca_certificates_key }}"
+    mode: "{{ ca_certificates_key_permissions }}"
+    owner: "{{ ca_certificates_key_owner }}"
+    group: "{{ ca_certificates_key_group }}"
+  tags:
+    - ca-certificates
+    - ca-certificates-private-key-create
+
+- name: Create certificate signing request (CSR) for certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ ca_certificates_key }}"
+    common_name: "{{ ca_certificates_common_name }}"
+    country_name: "{{ ca_certificates_country_name }}"
+    state_or_province_name: "{{ ca_certificates_state_or_province_name }}"
+    locality_name: "{{ ca_certificates_locality_name }}"
+    organization_name: "{{ ca_certificates_organization_name }}"
+    organizational_unit_name: "{{ ca_certificates_organizational_unit_name }}"
+    subject_alt_name: "{{ ca_certificates_subject_alt_names }}"
+  register: csr
+  tags:
+    - ca-certificates
+    - ca-certificates-csr-create
+
+- name: Check whether certificate exists
+  ansible.builtin.stat:
+    path: "{{ ca_certificates_cert }}"
+  register: ca_certificate_exists
+  tags:
+    - ca-certificates
+    - ca-certificates-certificate-exists
+
+- name: Read existing certificate if exists
+  ansible.builtin.slurp:
+    src: "{{ ca_certificates_cert }}"
+  when: ca_certificate_exists.stat.exists
+  register: ca_certificate
+  tags:
+    - ca-certificates
+    - ca-certificates-certificate-read
+
+- name: Sign certificate with our CA
+  community.crypto.x509_certificate_pipe:
+    content: "{{ (ca_certificate.content | b64decode) if ca_certificate_exists.stat.exists else omit }}"
+    csr_content: "{{ csr.csr }}"
+    provider: ownca
+    ownca_path: "{{ ca_certificates_ca_cert }}"
+    ownca_privatekey_path: "{{ ca_certificates_ca_key }}"
+    ownca_privatekey_passphrase: "{{ ca_certificates_ca_password }}"
+    ownca_not_after: "+{{ ca_certificates_validity }}"
+    ownca_not_before: "-1d"
+  delegate_to: "{{ ca_certificates_ca_host }}"
+  delegate_facts: true
+  become: false
+  register: ca_certificate
+  notify:
+    - Write fullchain certificate
+    - Write certificate
+  tags:
+    - ca-certificates
+    - ca-certificates-certificate-sign

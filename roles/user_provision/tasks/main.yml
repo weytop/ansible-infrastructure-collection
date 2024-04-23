@@ -1,0 +1,36 @@
+---
+- name: Provision User
+  when: user_provision_enabled|default(false)|bool
+  block:
+    - name: Create group "{{ user_provision_group }}"
+      ansible.builtin.group:
+        name: "{{ user_provision_group }}"
+        state: present
+      tags:
+        - user_provision
+        - user_provision_group
+
+    - name: Create user "{{ user_provision_name }}"
+      ansible.builtin.user:
+        name: "{{ user_provision_name }}"
+        comment: "{{ user_provision_comment }}"
+        group: "{{ user_provision_group }}"
+        groups: "{{ user_provision_groups }}"
+        append: "{{ user_provision_groups_append }}"
+        shell: "{{ user_provision_shell }}"
+        home: "{{ user_provision_home_path }}"
+        create_home: "{{ user_provision_home_creation }}"
+        system: "{{ user_provision_system }}"
+      tags:
+        - user_provision
+        - user_provision_user
+
+    - name: Set password for user "{{ user_provision_name }}"
+      ansible.builtin.user:
+        name: "{{ user_provision_name }}"
+        password: "{{ user_provision_password }}"
+        update_password: on_create
+      when: user_provision_password is defined and user_provision_password|length > 0
+      tags:
+        - user_provision
+        - user_provision_password

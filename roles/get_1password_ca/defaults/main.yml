@@ -1,0 +1,5 @@
+---
+# defaults file for op-to-file
+onepassword_ca_item: n2qchubqiiust3bdahleo356e4
+onepassword_ca_public_key_file: "{{ playbook_dir }}/files/ca/ca.pem"
+onepassword_ca_private_key_file: "{{ playbook_dir }}/files/ca/ca.key"

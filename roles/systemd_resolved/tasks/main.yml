@@ -1,0 +1,70 @@
+---
+# tasks file for systemd-resolved
+- name: Disable systemd dns stub listener
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: "^#?DNSStubListener="
+    line: "DNSStubListener={{ 'yes' if systemd_resolved_dns_stub_listener_enabled else 'no' }}"
+  notify: Restart systemd-resolved
+  tags:
+    - systemd-resolved
+    - systemd-resolved-dns-stub-listener
+
+- name: Replace systemd-resolved DNS servers
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: "^#?DNS="
+    line: "DNS={{ item }}"
+  loop: "{{ systemd_resolved_replace_dns_list }}"
+  notify: Restart systemd-resolved
+  when: systemd_resolved_replace_dns and systemd_resolved_enabled
+  tags:
+    - systemd-resolved
+    - systemd-resolved-dns
+
+- name: Systemd-resolved service state
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    enabled: "{{ systemd_resolved_enabled }}"
+    state: "{{ 'started' if systemd_resolved_enabled else 'stopped' }}"
+  tags:
+    - systemd-resolved
+    - systemd-resolved-service
+
+- name: Create resolv.conf symlink when systemd-resolved is enabled
+  ansible.builtin.file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+    force: true
+  when: systemd_resolved_enabled and not systemd_resolved_dns_stub_listener_enabled
+  tags:
+    - systemd-resolved
+    - systemd-resolved-resolv-conf
+
+- name: Create resolv.conf symlink when systemd-resolved stub listener is enabled
+  ansible.builtin.file:
+    src: /run/systemd/resolve/stub-resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+    force: true
+  when: systemd_resolved_enabled and systemd_resolved_dns_stub_listener_enabled
+  tags:
+    - systemd-resolved
+    - systemd-resolved-resolv-conf
+
+- name: Replace resolv.conf when systemd-resolved is disable
+  ansible.builtin.template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: not systemd_resolved_enabled
+  tags:
+    - systemd-resolved
+    - systemd-resolved-resolv-conf
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+  tags: always

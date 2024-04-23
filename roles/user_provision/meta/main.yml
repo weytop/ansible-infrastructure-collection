@@ -1,0 +1,18 @@
+galaxy_info:
+  author: Antoine Thys
+  description: Provision user and his group on a linux system (used as dependencie for other roles)
+  company: Weytop
+
+  license: GPL-3.0-or-later
+
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+
+  galaxy_tags:
+    - certificates
+    - linux
+    - ubuntu

@@ -1,0 +1,24 @@
+---
+# tasks file for trust-ca
+- name: Install ca-certificates
+  ansible.builtin.apt:
+    name: ca-certificates
+    state: present
+    update_cache: true
+  tags:
+    - trust-ca
+    - trust-ca-package-install
+
+- name: Copy certificates to trusted folder
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '{{ trust_ca_path }}/'
+    owner: root
+    group: root
+    mode: "0644"
+  with_fileglob:
+    - files/trust/*
+  notify: Update trusted CA
+  tags:
+    - trust-ca
+    - trust-ca-copy-certificates

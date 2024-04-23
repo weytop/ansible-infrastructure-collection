@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+{% for nameserver in systemd_resolved_replace_dns_list %}
+nameserver {{ nameserver }}
+{% endfor %}
+search {{ systemd_resolved_replace_search }}

@@ -1,0 +1,8 @@
+---
+# handlers file for systemd-resolved
+- name: Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted
+  when: systemd_resolved_enabled
+  tags: always

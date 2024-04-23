@@ -1,0 +1,33 @@
+---
+# CA variables
+ca_certificates_ca_host: localhost
+ca_certificates_ca_cert: "{{ playbook_dir }}/files/ca/ca.pem"
+ca_certificates_ca_key: "{{ playbook_dir }}/files/ca/ca.key"
+ca_certificates_ca_password: "{{ onepassword_ca_private_key_password }}"
+
+# Certificate variables
+ca_certificates_validity: 365d
+ca_certificates_cert: /etc/ssl/certs/cert.pem
+ca_certificates_full_chain: /etc/ssl/certs/cert-full.pem
+ca_certificates_key: /etc/ssl/private/cert.key
+
+# Certificate subject
+ca_certificates_common_name: DNS0
+ca_certificates_country_name: FR
+ca_certificates_state_or_province_name: Val-de-Marne
+ca_certificates_locality_name: Arcueil
+ca_certificates_organization_name: Weytop
+ca_certificates_organizational_unit_name: IT
+
+# Certificate subject alternative names
+ca_certificates_subject_alt_names:
+  - "DNS:dns0.weytop.net"
+  - "DNS:dns0.netbird.selfhosted"
+
+# Certificate permissions
+ca_certificates_cert_permissions: "0644"
+ca_certificates_key_permissions: "0600"
+ca_certificates_cert_owner: root
+ca_certificates_key_owner: root
+ca_certificates_cert_group: root
+ca_certificates_key_group: root
