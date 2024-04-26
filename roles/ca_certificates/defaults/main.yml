@@ -1,9 +1,14 @@
 ---
 # CA variables
-ca_certificates_ca_host: localhost
 ca_certificates_ca_cert: "{{ playbook_dir }}/files/ca/ca.pem"
 ca_certificates_ca_key: "{{ playbook_dir }}/files/ca/ca.key"
-ca_certificates_ca_password: "{{ onepassword_ca_private_key_password }}"
+ca_certificates_ca_password: "{{ get_1password_ca_private_key_password }}"
+ca_certificates_ca_1password_item:
+
+# CA delegate variables to get_1password_ca
+ca_certificates_ca_host: localhost
+ca_certificates_ca_become: false
+ca_certificates_ca_become_user: root
 
 # Certificate variables
 ca_certificates_validity: 365d
@@ -21,8 +26,8 @@ ca_certificates_organizational_unit_name: IT
 
 # Certificate subject alternative names
 ca_certificates_subject_alt_names:
-  - "DNS:dns0.weytop.net"
-  - "DNS:dns0.netbird.selfhosted"
+  - DNS:dns0.weytop.net
+  - DNS:dns0.netbird.selfhosted
 
 # Certificate permissions
 ca_certificates_cert_permissions: "0644"

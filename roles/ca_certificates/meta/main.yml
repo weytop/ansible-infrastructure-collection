@@ -1,6 +1,7 @@
+---
 galaxy_info:
   author: Antoine Thys
-  description: Create certificates from ca on 1password
+  description: Create certificates from ca on 1password with local client
   company: Weytop
 
   license: GPL-3.0-or-later

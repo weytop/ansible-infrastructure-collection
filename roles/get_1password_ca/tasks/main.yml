@@ -5,9 +5,13 @@
     token: "{{ onepassword_token }}"
     hostname: "{{ onepassword_hostname }}"
     vault: "{{ onepassword_vault_id }}"
-    item: "{{ onepassword_ca_item }}"
+    item: "{{ get_1password_ca_item }}"
   no_log: true
   register: item_info
+  delegate_to: "{{ get_1password_ca_delegate_to }}"
+  delegate_facts: false
+  become: "{{ get_1password_ca_become }}"
+  become_user: "{{ get_1password_ca_become_user }}"
   tags:
     - 1password
     - get-1password-ca
@@ -15,8 +19,12 @@
 - name: Write public key to file
   ansible.builtin.copy:
     content: "{{ item_info.op_item.fields.public_key.value }}"
-    dest: "{{ onepassword_ca_public_key_file }}"
-    mode: '0600'
+    dest: "{{ get_1password_ca_public_key_file }}"
+    mode: "0600"
+  delegate_to: "{{ get_1password_ca_delegate_to }}"
+  delegate_facts: false
+  become: "{{ get_1password_ca_become }}"
+  become_user: "{{ get_1password_ca_become_user }}"
   tags:
     - 1password
     - get-1password-ca
@@ -24,15 +32,23 @@
 - name: Write private key to file
   ansible.builtin.copy:
     content: "{{ item_info.op_item.fields.private_key.value }}"
-    dest: "{{ onepassword_ca_private_key_file }}"
-    mode: '0600'
+    dest: "{{ get_1password_ca_private_key_file }}"
+    mode: "0600"
+  delegate_to: "{{ get_1password_ca_delegate_to }}"
+  delegate_facts: false
+  become: "{{ get_1password_ca_become }}"
+  become_user: "{{ get_1password_ca_become_user }}"
   tags:
     - 1password
     - get-1password-ca
 
 - name: Set facts with private key password
   ansible.builtin.set_fact:
-    onepassword_ca_private_key_password: "{{ item_info.op_item.fields.password.value }}"
+    get_1password_ca_private_key_password: "{{ item_info.op_item.fields.password.value }}"
+  delegate_to: "{{ get_1password_ca_delegate_to }}"
+  delegate_facts: false
+  become: "{{ get_1password_ca_become }}"
+  become_user: "{{ get_1password_ca_become_user }}"
   tags:
     - 1password
     - get-1password-ca

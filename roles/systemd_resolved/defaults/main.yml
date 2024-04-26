@@ -6,4 +6,4 @@ systemd_resolved_replace_dns: false
 systemd_resolved_replace_dns_list:
   - 8.8.8.8
   - 1.1.1.1
-systemd_resolved_replace_search: "weytop.com"
+systemd_resolved_replace_search: weytop.com

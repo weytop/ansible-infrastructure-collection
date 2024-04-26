@@ -1,0 +1,35 @@
+---
+- name: Get CA
+  ansible.builtin.import_role:
+    name: get_1password_ca
+  vars:
+    get_1password_ca_item: "{{ ca_certificates_ca_1password_item }}"
+    get_1password_ca_delegate_to: "{{ ca_certificates_ca_host }}"
+    get_1password_ca_become: "{{ ca_certificates_ca_become }}"
+    get_1password_ca_become_user: "{{ ca_certificates_ca_become_user }}"
+  tags:
+    - get-1password-ca
+    - ca-certificates
+    - ca-certificates-dependencies
+
+- name: Trust CA
+  ansible.builtin.import_role:
+    name: trust_ca
+  tags:
+    - trust-ca
+    - ca-certificates
+    - ca-certificates-dependencies
+
+- name: Create folders
+  ansible.builtin.include_role:
+    name: create_folder
+  vars:
+    create_folder_path: "{{ item }}"
+  loop:
+    - "{{ ca_certificates_cert | dirname }}"
+    - "{{ ca_certificates_full_chain | dirname }}"
+    - "{{ ca_certificates_key | dirname }}"
+  tags:
+    - create-folder
+    - ca-certificates
+    - ca-certificates-dependencies

@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Antoine Thys
   description: Provision user and his group on a linux system (used as dependencie for other roles)

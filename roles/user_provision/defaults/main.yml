@@ -8,6 +8,6 @@ user_provision_name: www-data
 user_provision_shell: /bin/nologin
 user_provision_home_creation: false
 user_provision_home_path:
-user_provision_comment: "Create by ansible"
+user_provision_comment: Create by ansible
 user_provision_system: true
 user_provision_password:

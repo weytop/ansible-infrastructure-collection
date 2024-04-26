@@ -11,8 +11,8 @@
 
 - name: Copy certificates to trusted folder
   ansible.builtin.copy:
-    src: '{{ item }}'
-    dest: '{{ trust_ca_path }}/'
+    src: "{{ item }}"
+    dest: "{{ trust_ca_path }}/"
     owner: root
     group: root
     mode: "0644"

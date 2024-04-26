@@ -1,5 +1,11 @@
 ---
 # tasks file for ca-certificates
+- name: Import dependencies
+  ansible.builtin.import_tasks: dependencies.yml
+  tags:
+    - ca-certificates
+    - ca-certificates-dependencies
+
 - name: Create private key for certificate
   community.crypto.openssl_privatekey:
     path: "{{ ca_certificates_key }}"
@@ -57,8 +63,8 @@
     ownca_path: "{{ ca_certificates_ca_cert }}"
     ownca_privatekey_path: "{{ ca_certificates_ca_key }}"
     ownca_privatekey_passphrase: "{{ ca_certificates_ca_password }}"
-    ownca_not_after: "+{{ ca_certificates_validity }}"
-    ownca_not_before: "-1d"
+    ownca_not_after: +{{ ca_certificates_validity }}
+    ownca_not_before: -1d
   delegate_to: "{{ ca_certificates_ca_host }}"
   delegate_facts: true
   become: false
@@ -66,6 +72,12 @@
   notify:
     - Write fullchain certificate
     - Write certificate
+  tags:
+    - ca-certificates
+    - ca-certificates-certificate-sign
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
   tags:
     - ca-certificates
     - ca-certificates-certificate-sign

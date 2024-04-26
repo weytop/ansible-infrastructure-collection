@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Antoine Thys
   description: Connfigure systemd-resolved DNS servers and resolv.conf

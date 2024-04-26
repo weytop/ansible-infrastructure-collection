@@ -1,0 +1,18 @@
+---
+# tasks file for create_folder
+- name: Check if variable is defined
+  ansible.builtin.fail:
+    msg: "create_folder_path is not defined"
+  when: create_folder_path is not defined or create_folder_path | length == 0
+  tags: create_folder
+
+- name: Create folder
+  ansible.builtin.file:
+    path: "{{ create_folder_path }}"
+    owner: "{{ create_folder_owner }}"
+    group: "{{ create_folder_group }}"
+    mode: "{{ create_folder_mode }}"
+    state: "{{ create_folder_state }}"
+    recurse: "{{ create_folder_recursive }}"
+  become: "{{ create_folder_become }}"
+  tags: create_folder
