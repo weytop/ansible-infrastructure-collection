@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Test create_folder role
+  hosts: localhost
   remote_user: root
   roles:
     - create_folder

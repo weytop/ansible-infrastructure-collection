@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Test nginx_certificates role
+  hosts: localhost
   remote_user: root
   roles:
-    - certificates
+    - nginx_certificates

@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Test trust_ca role
+  hosts: localhost
   remote_user: root
   roles:
-    - ca-certificates
+    - trust_ca

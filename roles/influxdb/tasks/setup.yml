@@ -42,7 +42,7 @@
   ansible.builtin.user:
     name: influxdb
     system: true
-    shell: "/usr/sbin/nologin"
+    shell: /usr/sbin/nologin
     group: influxdb
 
 - name: setup | Ensure InfluxDB directories exist

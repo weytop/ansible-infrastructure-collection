@@ -30,7 +30,7 @@
         name: "{{ user_provision_name }}"
         password: "{{ user_provision_password }}"
         update_password: on_create
-      when: user_provision_password is defined and user_provision_password|length > 0
+      when: user_provision_password is defined
       tags:
         - user_provision
         - user_provision_password

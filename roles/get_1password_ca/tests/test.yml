@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Test get_1password_ca role
+  hosts: localhost
   remote_user: root
   roles:
-    - op-to-file
+    - get_1password_ca

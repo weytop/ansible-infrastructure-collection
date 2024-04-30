@@ -1,5 +1,5 @@
 ---
-- name: Get CA
+- name: dependencies | Get CA
   ansible.builtin.import_role:
     name: get_1password_ca
   vars:
@@ -12,7 +12,7 @@
     - ca-certificates
     - ca-certificates-dependencies
 
-- name: Trust CA
+- name: dependencies | Trust CA
   ansible.builtin.import_role:
     name: trust_ca
   tags:
@@ -20,7 +20,7 @@
     - ca-certificates
     - ca-certificates-dependencies
 
-- name: Create folders
+- name: dependencies | Create folders
   ansible.builtin.include_role:
     name: create_folder
   vars:

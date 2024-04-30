@@ -4,7 +4,6 @@ ca_certificates_ca_cert: "{{ playbook_dir }}/files/ca/ca.pem"
 ca_certificates_ca_key: "{{ playbook_dir }}/files/ca/ca.key"
 ca_certificates_ca_password: "{{ get_1password_ca_private_key_password }}"
 ca_certificates_ca_1password_item:
-
 # CA delegate variables to get_1password_ca
 ca_certificates_ca_host: localhost
 ca_certificates_ca_become: false

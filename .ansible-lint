@@ -1,0 +1,30 @@
+---
+# .ansible-lint
+
+profile: production
+
+# Allows dumping of results in SARIF format
+# sarif_file: result.sarif
+
+exclude_paths:
+  - .cache/
+  - .github/
+
+use_default_rules: true
+
+enable_list:
+  - args
+  - empty-string-compare
+  - no-log-password
+  - no-same-owner
+  - name[prefix]
+  - yaml
+
+warn_list:
+  - skip_this_tag
+  - experimental
+
+# write_list:
+#   - all
+
+offline: false
