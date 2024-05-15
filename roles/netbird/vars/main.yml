@@ -1,0 +1,11 @@
+---
+netbird_packages:
+  - netbird
+  # - netbird-ui
+
+netbird_packages_dependencies:
+  - ca-certificates
+  - curl
+  - gnupg
+  - jq
+  - python3-debian

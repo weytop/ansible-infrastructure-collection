@@ -1,0 +1,4 @@
+---
+netbird_management_url: https://api.netbird.io:443
+netbird_wireguard_port: 51820
+netbird_setup_key:

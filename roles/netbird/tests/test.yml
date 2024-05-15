@@ -1,0 +1,6 @@
+---
+- name: Test netbird role
+  hosts: localhost
+  remote_user: root
+  roles:
+    - netbird

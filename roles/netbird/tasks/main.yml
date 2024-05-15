@@ -1,0 +1,89 @@
+---
+- name: Install netbird dependencies
+  ansible.builtin.apt:
+    name: "{{ netbird_packages_dependencies }}"
+    state: present
+    update_cache: true
+  tags:
+    - netbird
+    - netbird_dependencies
+
+- name: Add wiretrustee repository into sources list
+  ansible.builtin.deb822_repository:
+    name: wiretrustee
+    types: deb
+    uris: https://pkgs.wiretrustee.com/debian
+    suites: stable
+    components: main
+    architectures: amd64
+    signed_by: https://pkgs.wiretrustee.com/debian/public.key
+  tags:
+    - netbird
+    - netbird_repo
+
+- name: Install netbird packages
+  ansible.builtin.apt:
+    name: netbird
+    state: present
+    update_cache: true
+  tags:
+    - netbird
+    - netbird_install
+
+- name: Populate service facts
+  ansible.builtin.service_facts:
+  tags:
+    - netbird
+    - netbird_facts
+
+- name: Start netbird service
+  ansible.builtin.systemd:
+    name: netbird
+    state: started
+    enabled: true
+  tags:
+    - netbird
+    - netbird_start
+
+- name: Setup netbird VPN
+  ansible.builtin.command: >
+    netbird up --setup-key {{ netbird_setup_key }}
+    --management-url {{ netbird_management_url }}
+    --wireguard-port {{ netbird_wireguard_port }}
+  register: netbird_connect
+  until: "netbird_connect is not failed"
+  retries: 10
+  delay: 30
+  changed_when: netbird_connect == 'Connected'
+  tags:
+    - netbird
+    - netbird_setup
+
+- name: Pause a bit for netbird coming up
+  ansible.builtin.pause:
+    seconds: 15
+  tags:
+    - netbird
+    - netbird_wait
+
+- name: Get netbird vpn.
+  ansible.builtin.command: "netbird status --json"
+  changed_when: false
+  register: netbird_status
+  tags:
+    - netbird
+    - netbird_facts
+
+- name: Saving netbird_ip.
+  ansible.builtin.set_fact:
+    netbird_host_ip: "{{ netbird_status.stdout | from_json | community.general.json_query('netbirdIp') | ansible.utils.ipaddr('address') }}"
+  tags:
+    - netbird
+    - netbird_facts
+
+- name: Debug netbird_host_ip
+  ansible.builtin.debug:
+    var: netbird_host_ip
+  tags:
+    - netbird
+    - netbird_ip
