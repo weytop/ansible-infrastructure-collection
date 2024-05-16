@@ -14,13 +14,23 @@
   ansible.builtin.lineinfile:
     path: /etc/systemd/resolved.conf
     regexp: ^#?DNS=
-    line: DNS={{ item }}
-  loop: "{{ systemd_resolved_replace_dns_list }}"
+    line: DNS={{ systemd_resolved_replace_dns_list | join(' ') }}
   notify: Restart systemd-resolved
-  when: systemd_resolved_replace_dns and systemd_resolved_enabled
+  when: systemd_resolved_replace_dns and systemd_resolved_enabled and (systemd_resolved_replace_dns_list | length > 0)
   tags:
     - systemd-resolved
     - systemd-resolved-dns
+
+- name: Replace systemd-resolved DNS domain
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: ^#?Domains=
+    line: Domains={{ systemd_resolved_replace_search | join(' ') }}
+  notify: Restart systemd-resolved
+  when: systemd_resolved_replace_dns and systemd_resolved_enabled and (systemd_resolved_replace_search | length > 0)
+  tags:
+    - systemd-resolved
+    - systemd-resolved-search
 
 - name: Systemd-resolved service state
   ansible.builtin.systemd:

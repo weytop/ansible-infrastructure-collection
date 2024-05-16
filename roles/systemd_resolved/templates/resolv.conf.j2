@@ -2,4 +2,9 @@
 {% for nameserver in systemd_resolved_replace_dns_list %}
 nameserver {{ nameserver }}
 {% endfor %}
-search {{ systemd_resolved_replace_search }}
+{% if systemd_resolved_replace_search | default([]) | length > 0 %}
+search {{ systemd_resolved_replace_search | join(' ') }}
+{% endif %}
+{% if systemd_resolved_replace_domain | default('') | length > 0 %}
+domain {{ systemd_resolved_replace_domain }}
+{% endif %}
