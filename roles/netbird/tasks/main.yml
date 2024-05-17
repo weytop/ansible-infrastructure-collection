@@ -55,6 +55,7 @@
   retries: 10
   delay: 30
   changed_when: netbird_connect == 'Connected'
+  no_log: true # Do not log the setup key
   tags:
     - netbird
     - netbird_setup
