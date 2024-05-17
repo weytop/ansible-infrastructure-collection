@@ -23,7 +23,7 @@
 
 - name: Install netbird packages
   ansible.builtin.apt:
-    name: netbird
+    name: "{{ netbird_packages }}"
     state: present
     update_cache: true
   tags:
@@ -55,6 +55,7 @@
   retries: 10
   delay: 30
   changed_when: netbird_connect == 'Connected'
+  no_log: true # Do not log the setup key
   tags:
     - netbird
     - netbird_setup
