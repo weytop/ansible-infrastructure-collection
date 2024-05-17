@@ -1,7 +1,8 @@
 ---
-netbird_packages:
+netbird_package:
   - netbird={{ netbird_version }}
-  - "{{ netbird_ui | ternary('netbird-ui=' ~ netbird_version,'') }}"
+netbird_ui_package:
+  - netbird-ui={{ netbird_version }}
 
 netbird_packages_dependencies:
   - ca-certificates

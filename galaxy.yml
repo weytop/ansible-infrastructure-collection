@@ -1,7 +1,7 @@
 ---
 namespace: weytop
 name: infrastructure
-version: 1.0.3
+version: 1.0.4
 readme: README.md
 authors:
   - Antoine Thys <athys@weytop.com>

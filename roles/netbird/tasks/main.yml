@@ -21,11 +21,21 @@
     - netbird
     - netbird_repo
 
-- name: Install netbird packages
+- name: Install netbird package
   ansible.builtin.apt:
-    name: "{{ netbird_packages }}"
+    name: "{{ netbird_package }}"
     state: present
     update_cache: true
+  tags:
+    - netbird
+    - netbird_install
+
+- name: Install netbird-ui package
+  ansible.builtin.apt:
+    name: "{{ netbird_ui_package }}"
+    state: present
+    update_cache: true
+  when: netbird_ui
   tags:
     - netbird
     - netbird_install
