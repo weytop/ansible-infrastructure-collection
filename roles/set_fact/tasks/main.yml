@@ -1,0 +1,5 @@
+---
+- name: Templating fact {{ set_fact_key }}
+  ansible.builtin.set_fact: {"{{ set_fact_key }}": "{{ set_fact_value }}"} # noqa var-naming[no-jinja]
+  no_log: "{{ set_fact_no_log | default(false) }}"
+  tags: set_fact
