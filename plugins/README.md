@@ -1,3 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+SPDX-FileCopyrightText: 2024 Weytop
+SPDX-FileContributor: ThysTips <contact@thystips.net>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # Collections Plugins Directory
 
 This directory can be used to ship various plugins inside an Ansible collection. Each plugin is placed in a folder that
