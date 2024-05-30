@@ -1,0 +1,61 @@
+---
+- name: Compose the Minio server download base url
+  set_fact:
+    _minio_server_download_base_url: "https://dl.minio.io/server/minio/release/linux-{{ go_arch }}"
+
+- name: Compose the Minio server download url with lastest release
+  set_fact:
+    _minio_server_download_url: "{{ _minio_server_download_base_url }}/minio"
+  when: minio_server_release | length == 0
+
+- name: "Compose the Minio server download url with release {{ minio_server_release }}"
+  set_fact:
+    _minio_server_download_url: "{{ _minio_server_download_base_url }}/archive/minio.{{ minio_server_release }}"
+  when: minio_server_release | length > 0
+
+- name: "Get the Minio server checksum for {{ go_arch }} architecture"
+  set_fact:
+    _minio_server_checksum: "{{ lookup('url', _minio_server_download_url + '.sha256sum').split(' ')[0] }}"
+
+<<<<<<< HEAD
+- name: Create Minio group
+  group:
+    name: "{{ minio_group }}"
+    state: present
+  when: minio_usergroup_manage|bool
+
+- name: Create Minio user
+  user:
+    name: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    system: "yes"
+    create_home: no
+    shell: "/usr/sbin/nologin"
+  when: minio_usergroup_manage|bool
+
+- name: Create the Minio data storage directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: 0750
+  when: minio_server_make_datadirs
+  with_items: "{{ minio_server_datadirs }}"
+
+=======
+>>>>>>> 86e9c2b3f3e5c1da2c155b6cf7160f400851553f
+- name: Download the Minio server
+  get_url:
+    url: "{{ _minio_server_download_url }}"
+    dest: "{{ minio_server_bin }}"
+    owner: "root"
+    group: "root"
+    mode: 0755
+    checksum: "sha256:{{ _minio_server_checksum }}"
+  register: _download_server
+  until: _download_server is succeeded
+  when: minio_install_source == "download"
+  retries: 5
+  delay: 2
+  notify: restart minio

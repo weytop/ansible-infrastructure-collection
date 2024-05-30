@@ -1,0 +1,6 @@
+---
+- name: Test minio role
+  hosts: localhost
+  remote_user: root
+  roles:
+    - minio
