@@ -5,21 +5,30 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
+- name: Preflight
+  ansible.builtin.import_tasks: preflight.yml
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure
 
-- name: Add sni support to legacy python installations
-  include_tasks: python_sni.yml
-  when:
-    - ansible_os_family == 'Debian'
-    - ansible_python_version is version_compare('2.6.0', '>=')
-    - ansible_python_version is version_compare('2.7.9', '<')
-
-- import_tasks: preflight.yml
-
-- include_tasks: install-server.yml
+- name: Install Minio server
+  ansible.builtin.include_tasks: install-server.yml
   when: minio_install_server
+  tags:
+    - minio
+    - minio_server_install
 
-- include_tasks: configure-server.yml
+- name: Configure Minio server
+  ansible.builtin.include_tasks: configure-server.yml
   when: minio_configure_server
+  tags:
+    - minio
+    - minio_server_configure
 
-- include_tasks: install-client.yml
+- name: Install Minio client
+  ansible.builtin.include_tasks: install-client.yml
   when: minio_install_client
+  tags:
+    - minio
+    - minio_client_install

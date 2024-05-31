@@ -5,60 +5,82 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
-- name: Create Minio group
-  group:
+- name: configure-server | Create Minio group
+  ansible.builtin.group:
     name: "{{ minio_group }}"
     state: present
+  tags:
+    - minio
+    - minio_server_configure
 
-- name: Create Minio user
-  user:
+- name: configure-server | Create Minio user
+  ansible.builtin.user:
     name: "{{ minio_user }}"
     group: "{{ minio_group }}"
-    system: "yes"
+    system: true
     shell: "/usr/sbin/nologin"
+  tags:
+    - minio
+    - minio_server_configure
 
-- name: Create the Minio data storage directories
-  file:
+- name: configure-server | Create the Minio data storage directories
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: "{{ minio_user }}"
     group: "{{ minio_group }}"
-    mode: 0750
+    mode: '0750'
   when: minio_server_make_datadirs
   with_items: "{{ minio_server_datadirs }}"
+  tags:
+    - minio
+    - minio_server_configure
 
-- name: Generate the Minio server envfile
-  template:
+- name: configure-server | Generate the Minio server envfile
+  ansible.builtin.template:
     src: minio.env.j2
     dest: "{{ minio_server_envfile }}"
     owner: "root"
     group: "{{ minio_group }}"
-    mode: 0640
-  notify: restart minio
+    mode: '0640'
+  notify: Restart minio
+  tags:
+    - minio
+    - minio_server_configure
 
-- name: Create the Minio server systemd config
-  template:
+- name: configure-server | Create the Minio server systemd config
+  ansible.builtin.template:
     src: minio.service.j2
     dest: "/etc/systemd/system/minio.service"
     owner: "root"
     group: "root"
+    mode: '0644'
   when: ansible_service_mgr == "systemd"
   notify:
-    - reload minio systemd
-    - restart minio
+    - Reload minio systemd
+    - Restart minio
+  tags:
+    - minio
+    - minio_server_configure
 
-- name: Create the Minio server init.d config
-  template:
+- name: configure-server | Create the Minio server init.d config
+  ansible.builtin.template:
     src: minio.init.j2
     dest: "/etc/init.d/minio"
     owner: "root"
     group: "root"
-    mode: 0750
+    mode: '0750'
   when: ansible_service_mgr != "systemd"
-  notify: restart minio
+  notify: Restart minio
+  tags:
+    - minio
+    - minio_server_configure
 
-- name: Enable and start the Minio service
-  service:
+- name: configure-server | Enable and start the Minio service
+  ansible.builtin.service:
     name: minio
     state: started
     enabled: true
+  tags:
+    - minio
+    - minio_server_configure
