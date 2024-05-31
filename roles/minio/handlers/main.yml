@@ -10,8 +10,16 @@
   ansible.builtin.systemd:
     name: minio
     daemon_reload: true
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure
 
 - name: Restart minio
   ansible.builtin.service:
     name: minio
     state: restarted
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure

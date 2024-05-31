@@ -5,28 +5,47 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
-- name: Validate access key
-  fail:
-    msg: "minio_access_key is set but must be at least three characters"
-  when: minio_access_key|length < 3 and minio_access_key|length != 0
+- name: preflight | Validate access key
+  ansible.builtin.fail:
+    msg: "minio_root_user is set but must be at least three characters"
+  when: minio_root_user|length < 3 and minio_root_user|length != 0
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure
 
-- name: Validate secret key
-  fail:
-    msg: "minio_secret_key is set but must be at least 8 characters"
-  when: minio_secret_key|length < 8 and minio_secret_key|length != 0
+- name: preflight | Validate secret key
+  ansible.builtin.fail:
+    msg: "minio_root_password is set but must be at least 8 characters"
+  when: minio_root_password|length < 8 and minio_root_password|length != 0
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure
 
-- name: Setup __minio_volumes (cluster context)
-  set_fact:
+- name: preflight | Setup __minio_volumes (cluster context)
+  ansible.builtin.set_fact:
     __minio_volumes: "{{ minio_server_cluster_nodes | join(' ') }}"
-  when:
-    minio_server_cluster_nodes|length > 0
+  when: minio_server_cluster_nodes|length > 0
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure
 
-- name: Setup __minio_volumes (single node)
-  set_fact:
+- name: preflight | Setup __minio_volumes (single node)
+  ansible.builtin.set_fact:
     __minio_volumes: "{{ minio_server_datadirs | join(' ') }}"
   when: minio_server_datadirs|length > 0 and minio_server_cluster_nodes|length == 0
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure
 
-- name: Validate __minio_volumes
-  fail:
+- name: preflight | Validate __minio_volumes
+  ansible.builtin.fail:
     msg: "Please set minio_server_cluster_nodes or minio_server_datadirs"
   when: __minio_volumes|length == 0
+  tags:
+    - minio
+    - minio_server_install
+    - minio_server_configure

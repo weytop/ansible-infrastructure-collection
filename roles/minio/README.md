@@ -53,10 +53,42 @@ minio_server_envfile: /etc/default/minio
 Path to the file containing the minio server configuration ENV variables.
 
 ```yaml
-minio_server_addr: ":9091"
+minio_server_ip: ""
 ```
 
 The Minio server listen address.
+
+```yaml
+minio_server_port: "9000"
+```
+
+The Minio server listen port.
+
+```yaml
+minio_server_addr: "{{ minio_server_ip }}:{{ minio_server_port }}"
+```
+
+The Minio server listen address and port construct with `minio_server_ip` and `minio_server_port`.
+
+```yaml
+minio_console_ip: ""
+minio_console_port: "9001"
+minio_console_addr: "{{ minio_console_ip }}:{{ minio_console_port }}"
+```
+
+Same as above but for the Minio web console.
+
+```yaml
+minio_server_url: ""
+```
+
+The Minio server URL used by Minio console to communicate with the server.
+
+```yaml
+minio_browser_redirect_url: ""
+```
+
+The Minio server URL for browser console access.
 
 ```yaml
 minio_server_datadirs:
@@ -105,18 +137,39 @@ minio_server_opts: ""
 Additional CLI options that must be appended to the minio server start command.
 
 ```yaml
-minio_access_key: ""
-minio_secret_key: ""
+minio_root_user: ""
+minio_root_password: ""
 ```
 
-Minio access and secret keys.
+Minio root user and password (replace access and secret keys).
+Username must be at least 3 characters long and password must be at least 8 characters long.
 
 ```yaml
 minio_install_server: true
+minio_configure_server: true
 minio_install_client: true
 ```
 
-Switches to disable minio server and/or minio client installation.
+Switches to disable minio server and/or minio client installation or configuration.
+
+```yaml
+minio_install_source: download
+```
+
+Installation source for Minio server and client. Can be `download` (Github release) or `repo` (distribution repository).
+WARNING: Switching between `download` and `repo` will not uninstall the previous installation and may cause conflicts.
+
+```yaml
+minio_upgrade: true
+```
+
+Upgrade Minio server and client if already installed from repository.
+
+```yaml
+minio_region: us-east-1
+```
+
+Region used by Minio server.
 
 ## Dependencies
 
@@ -129,9 +182,11 @@ None.
   hosts: all
   become: yes
   roles:
-    - { role: atosatto.minio }
+    - { role: weytop.infrastructure.minio, tags: minio }
   vars:
     minio_server_datadirs: [ "/minio-test" ]
+    minio_root_user: "minio"
+    minio_root_password: "minio"
 ```
 
 ## License

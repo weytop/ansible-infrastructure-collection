@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
-go_arch_map:
+minio_go_arch_map:
   i386: '386'
   x86_64: 'amd64'
   aarch64: 'arm64'
   armv7l: 'arm'
   armv6l: 'arm6vl'
 
-go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+minio_go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"

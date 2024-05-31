@@ -5,63 +5,123 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
-- name: Compose the Minio server download base url
-  set_fact:
-    _minio_server_download_base_url: "https://dl.minio.io/server/minio/release/linux-{{ go_arch }}"
+- name: install-server | Compose the Minio server download base url
+  ansible.builtin.set_fact:
+    _minio_server_download_base_url: "https://dl.minio.io/server/minio/release/linux-{{ minio_go_arch }}"
+  when: minio_install_source == "download"
+  tags:
+    - minio
+    - minio_server_install
 
-- name: Compose the Minio server download url with lastest release
-  set_fact:
+- name: install-server | Compose the Minio server download url with lastest release
+  ansible.builtin.set_fact:
     _minio_server_download_url: "{{ _minio_server_download_base_url }}/minio"
-  when: minio_server_release | length == 0
+  when: minio_install_source == "download" and minio_server_release | length == 0
+  tags:
+    - minio
+    - minio_server_install
 
-- name: "Compose the Minio server download url with release {{ minio_server_release }}"
-  set_fact:
+- name: install-server | "Compose the Minio server download url with release {{ minio_server_release }}"
+  ansible.builtin.set_fact:
     _minio_server_download_url: "{{ _minio_server_download_base_url }}/archive/minio.{{ minio_server_release }}"
-  when: minio_server_release | length > 0
+  when: minio_install_source == "download" and minio_server_release | length > 0
+  tags:
+    - minio
+    - minio_server_install
 
-- name: "Get the Minio server checksum for {{ go_arch }} architecture"
-  set_fact:
+- name: install-server | "Get the Minio server checksum for architecture {{ minio_go_arch }}"
+  ansible.builtin.set_fact:
     _minio_server_checksum: "{{ lookup('url', _minio_server_download_url + '.sha256sum').split(' ')[0] }}"
+  when: minio_install_source == "download"
+  tags:
+    - minio
+    - minio_server_install
 
-<<<<<<< HEAD
-- name: Create Minio group
-  group:
+- name: install-server | Create Minio group
+  ansible.builtin.group:
     name: "{{ minio_group }}"
     state: present
   when: minio_usergroup_manage|bool
+  tags:
+    - minio
+    - minio_server_install
 
-- name: Create Minio user
-  user:
+- name: install-server | Create Minio user
+  ansible.builtin.user:
     name: "{{ minio_user }}"
     group: "{{ minio_group }}"
     system: "yes"
-    create_home: no
+    create_home: false
     shell: "/usr/sbin/nologin"
   when: minio_usergroup_manage|bool
+  tags:
+    - minio
+    - minio_server_install
 
-- name: Create the Minio data storage directories
-  file:
+- name: install-server | Create the Minio data storage directories
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: "{{ minio_user }}"
     group: "{{ minio_group }}"
-    mode: 0750
+    mode: '0750'
   when: minio_server_make_datadirs
   with_items: "{{ minio_server_datadirs }}"
+  tags:
+    - minio
+    - minio_server_install
 
-=======
->>>>>>> 86e9c2b3f3e5c1da2c155b6cf7160f400851553f
-- name: Download the Minio server
-  get_url:
+- name: install-server | Download the Minio server
+  ansible.builtin.get_url:
     url: "{{ _minio_server_download_url }}"
     dest: "{{ minio_server_bin }}"
     owner: "root"
     group: "root"
-    mode: 0755
+    mode: '0755'
     checksum: "sha256:{{ _minio_server_checksum }}"
   register: _download_server
   until: _download_server is succeeded
   when: minio_install_source == "download"
   retries: 5
   delay: 2
-  notify: restart minio
+  notify: Restart minio
+  tags:
+    - minio
+    - minio_server_install
+
+- name: install-server | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  when: minio_install_source == "repo"
+  tags:
+    - minio
+    - minio_server_install
+
+- name: install-server | Install Minio server from a repository
+  ansible.builtin.package:
+    name: minio
+    state: present
+  when: minio_install_source == "repo"
+  tags:
+    - minio
+    - minio_server_install
+
+- name: install-server | Upgrade Minio server from a repository
+  ansible.builtin.apt:
+    name: minio
+    state: latest
+    only_upgrade: true
+  when: minio_install_source == "repo" and minio_upgrade and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+  tags:
+    - minio
+    - minio_server_install
+
+- name: install-server | Upgrade Minio server from a repository
+  ansible.builtin.dnf:
+    name: minio
+    state: latest
+    update_only: true
+  when: minio_install_source == "repo" and minio_upgrade and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux')
+  tags:
+    - minio
+    - minio_server_install

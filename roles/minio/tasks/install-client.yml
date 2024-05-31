@@ -6,41 +6,88 @@
 
 ---
 
-- name: Compose the Minio client download base url
-  set_fact:
-    _minio_client_download_base_url: "https://dl.minio.io/client/mc/release/linux-{{ go_arch }}"
+- name: install-client | Compose the Minio client download base url
+  ansible.builtin.set_fact:
+    _minio_client_download_base_url: "https://dl.minio.io/client/mc/release/linux-{{ minio_go_arch }}"
+  when: minio_install_source == "download"
+  tags:
+    - minio
+    - minio_client_install
 
-- name: Compose the Minio client download url with lastest release
-  set_fact:
+- name: install-client | Compose the Minio client download url with lastest release
+  ansible.builtin.set_fact:
     _minio_client_download_url: "{{ _minio_client_download_base_url }}/mc"
-  when: minio_client_release | length == 0
+  when: minio_install_source == "download" and minio_client_release | length == 0
+  tags:
+    - minio
+    - minio_client_install
 
-- name: "Compose the Minio client download url with release {{ minio_client_release }}"
-  set_fact:
+- name: install-client | "Compose the Minio client download url with release {{ minio_client_release }}"
+  ansible.builtin.set_fact:
     _minio_client_download_url: "{{ _minio_client_download_base_url }}/archive/mc.{{ minio_client_release }}"
-  when: minio_client_release | length > 0
+  when: minio_install_source == "download" and minio_client_release | length > 0
+  tags:
+    - minio
+    - minio_client_install
 
-- name: "Get the Minio client checksum for {{ go_arch }} architecture"
-  set_fact:
+- name: install-client | "Get the Minio client checksum for architecture {{ minio_go_arch }}"
+  ansible.builtin.set_fact:
     _minio_client_checksum: "{{ lookup('url', _minio_client_download_url + '.sha256sum').split(' ')[0] }}"
+  when: minio_install_source == "download"
+  tags:
+    - minio
+    - minio_client_install
 
-- name: Download the Minio client
-  get_url:
+- name: install-client | Download the Minio client
+  ansible.builtin.get_url:
     url: "{{ _minio_client_download_url }}"
     dest: "{{ minio_client_bin }}"
     owner: "root"
     group: "root"
-    mode: 0755
+    mode: '0755'
     checksum: "sha256:{{ _minio_client_checksum }}"
   register: _download_client
   until: _download_client is succeeded
   when: minio_install_source == "download"
   retries: 5
   delay: 2
+  tags:
+    - minio
+    - minio_client_install
 
-- name: Install the latest version of Minio from a repository
-  ansible.builtin.package:
-    name:
-      - mcli
-    state: latest
+- name: install-client | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
   when: minio_install_source == "repo"
+  tags:
+    - minio
+    - minio_client_install
+
+- name: install-client | Install Minio client from a repository
+  ansible.builtin.package:
+    name: mcli
+    state: present
+  when: minio_install_source == "repo"
+  tags:
+    - minio
+    - minio_client_install
+
+- name: install-client | Upgrade Minio client from a repository
+  ansible.builtin.apt:
+    name: mcli
+    state: latest
+    only_upgrade: true
+  when: minio_install_source == "repo" and minio_upgrade and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+  tags:
+    - minio
+    - minio_client_install
+
+- name: install-client | Upgrade Minio client from a repository
+  ansible.builtin.dnf:
+    name: mcli
+    state: latest
+    update_only: true
+  when: minio_install_source == "repo" and minio_upgrade and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux')
+  tags:
+    - minio
+    - minio_client_install
