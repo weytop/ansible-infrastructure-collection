@@ -12,6 +12,12 @@
   when: create_folder_path is not defined or create_folder_path | length == 0
   tags: create_folder
 
+- name: Display create_folder_path when debug tag is used
+  ansible.builtin.debug:
+    msg: "{{ create_folder_path }}"
+  when: "'debug' in ansible_run_tags"
+  tags: create_folder
+
 - name: Create folder
   ansible.builtin.file:
     path: "{{ create_folder_path }}"

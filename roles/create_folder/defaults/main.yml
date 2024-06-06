@@ -6,7 +6,6 @@
 
 ---
 # defaults file for create_folder
-create_folder_path:
 create_folder_owner: root
 create_folder_group: root
 create_folder_mode: "0755"
