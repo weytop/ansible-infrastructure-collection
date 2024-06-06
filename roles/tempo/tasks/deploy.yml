@@ -1,0 +1,114 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+# tasks file for Tempo deployment
+- name: deploy | Obtain the latest version from the Tempo GitHub repo
+  when: tempo_version == "latest"
+  block:
+    - name: deploy | Scrape Github API endpoint to obtain latest Tempo version
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/grafana/tempo/releases/latest"
+        method: GET
+        body_format: json
+      become: false
+      delegate_to: localhost
+      run_once: true
+      register: __github_latest_version
+
+    - name: deploy | Latest available Tempo version
+      ansible.builtin.set_fact:
+        tempo_version: "{{ __github_latest_version.json.tag_name | regex_replace('^v?(\\d+\\.\\d+\\.\\d+)$', '\\1') }}"
+
+- name: deploy | Verify current deployed version
+  block:
+    - name: deploy | Check if Tempo binary is present
+      ansible.builtin.stat:
+        path: "/usr/bin/tempo"
+      register: __already_deployed
+
+    - name: deploy | Obtain current deployed Tempo version
+      ansible.builtin.command:
+        cmd: "/usr/bin/tempo --version"
+      changed_when: false
+      register: __current_deployed_version
+      when: __already_deployed.stat.exists | bool
+
+- name: deploy | Include RedHat/Rocky setup
+  ansible.builtin.include_tasks:
+    file: setup-Redhat.yml
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- name: deploy | Include Debian/Ubuntu setup
+  ansible.builtin.include_tasks:
+    file: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: deploy | Check if Tempo default dir is present
+  ansible.builtin.stat:
+    path: "/tmp/tempo/wal"
+  register: __default_structure
+
+- name: deploy | Default structure cleanup
+  when: __default_structure.stat.exists | bool
+  block:
+    - name: deploy | Ensure that Tempo is stopped before default cleanup
+      ansible.builtin.systemd:
+        name: tempo.service
+        state: stopped
+
+    - name: deploy | Remove default configuration from "/tmp/tempo" directory
+      ansible.builtin.file:
+        path: "/tmp/tempo"
+        state: absent
+
+- name: deploy | Ensure that Tempo working path exists
+  ansible.builtin.file:
+    path: "{{ tempo_working_path }}"
+    state: directory
+    owner: "tempo"
+    group: "nogroup"
+    mode: "0755"
+
+# - name: deploy | Ensure that Tempo rule path exists
+#   ansible.builtin.file:
+#     path: "{{ tempo_ruler_alert_path }}"
+#     state: directory
+#     owner: "tempo"
+#     group: "nogroup"
+#     mode: "0755"
+#   when:
+#     - tempo_ruler_alert_path is defined
+#     - tempo_ruler is defined
+
+- name: deploy | Template Tempo config - /etc/tempo/config.yml
+  ansible.builtin.template:
+    src: "config.yml.j2"
+    dest: "/etc/tempo/config.yml"
+    owner: "tempo"
+    group: "nogroup"
+    mode: "0644"
+    validate: "tempo -config.verify -config.file=%s"
+  notify:
+    - Restart tempo
+
+- name: deploy | Ensure restart has completed
+  ansible.builtin.meta: flush_handlers
+
+- name: deploy | Ensure that Tempo is started
+  ansible.builtin.systemd:
+    name: tempo.service
+    state: started
+    enabled: true
+
+- name: deploy | Verify that Tempo URL is responding
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ tempo_http_listen_port }}/ready"
+    method: GET
+  register: tempo_verify_url_status_code
+  retries: 5
+  delay: 8
+  until: tempo_verify_url_status_code.status == 200

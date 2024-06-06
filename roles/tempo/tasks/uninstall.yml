@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+# tasks file for Tempo uninstall
+
+- name: uninstall | Stop Tempo service
+  ansible.builtin.systemd:  # noqa ignore-errors
+    name: tempo
+    state: stopped
+  ignore_errors: true
+
+- name: uninstall | Uninstall Tempo rpm package
+  ansible.builtin.dnf:
+    name: "tempo"
+    state: absent
+    autoremove: true
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- name: uninstall | Uninstall Tempo deb package
+  ansible.builtin.apt:
+    name: "tempo"
+    state: absent
+    purge: true
+  when: ansible_os_family == 'Debian'
+
+- name: uninstall | Ensure that Tempo firewalld rule is not present - tcp port {{ tempo_http_listen_port }}
+  ansible.posix.firewalld:  # noqa ignore-errors
+    immediate: true
+    permanent: true
+    port: "{{ tempo_http_listen_port }}/tcp"
+    state: disabled
+  ignore_errors: true
+
+- name: uninstall | Remove Tempo directories"
+  ansible.builtin.file:
+    path: "{{ remove_me }}"
+    state: absent
+  loop:
+    - "/etc/tempo"
+    - "{{ tempo_working_path }}"
+  loop_control:
+    loop_var: remove_me
+
+- name: uninstall | Remove the Tempo system user
+  ansible.builtin.user:
+    name: "tempo"
+    force: true
+    state: absent
+
+- name: uninstall | Remove Tempo system group
+  ansible.builtin.group:
+    name: "tempo"
+    state: absent
