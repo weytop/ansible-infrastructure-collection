@@ -55,6 +55,7 @@
   delegate_facts: false
   become: "{{ get_1password_ca_become }}"
   become_user: "{{ get_1password_ca_become_user }}"
+  no_log: true
   tags:
     - 1password
     - get-1password-ca
