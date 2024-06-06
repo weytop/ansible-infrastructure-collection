@@ -29,12 +29,19 @@
 - name: dependencies | Create folders
   ansible.builtin.include_role:
     name: create_folder
-  vars:
-    create_folder_path: "{{ item }}"
+    apply:
+      tags:
+        - create-folder
+        - ca-certificates
+        - ca-certificates-dependencies
+  # vars:
+  #   create_folder_path: "{{ item }}"
   loop:
     - "{{ ca_certificates_cert | dirname }}"
     - "{{ ca_certificates_full_chain | dirname }}"
     - "{{ ca_certificates_key | dirname }}"
+  loop_control:
+    loop_var: create_folder_path
   tags:
     - create-folder
     - ca-certificates
