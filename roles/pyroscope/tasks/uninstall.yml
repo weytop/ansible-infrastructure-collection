@@ -1,0 +1,51 @@
+---
+# tasks file for Pyroscope uninstall
+
+- name: uninstall | Stop Pyroscope service
+  ansible.builtin.systemd:  # noqa ignore-errors
+    name: pyroscope
+    state: stopped
+  ignore_errors: true
+
+- name: uninstall | Uninstall Pyroscope rpm package
+  ansible.builtin.dnf:
+    name: "pyroscope"
+    state: absent
+    autoremove: true
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- name: uninstall | Uninstall Pyroscope deb package
+  ansible.builtin.apt:
+    name: "pyroscope"
+    state: absent
+    purge: true
+  when: ansible_os_family == 'Debian'
+
+- name: uninstall | Ensure that Pyroscope firewalld rule is not present - tcp port {{ pyroscope_http_listen_port }}
+  ansible.posix.firewalld:  # noqa ignore-errors
+    immediate: true
+    permanent: true
+    port: "{{ pyroscope_http_listen_port }}/tcp"
+    state: disabled
+  ignore_errors: true
+
+- name: uninstall | Remove Pyroscope directories"
+  ansible.builtin.file:
+    path: "{{ remove_me }}"
+    state: absent
+  loop:
+    - "/etc/pyroscope"
+    - "{{ pyroscope_working_path }}"
+  loop_control:
+    loop_var: remove_me
+
+- name: uninstall | Remove the Pyroscope system user
+  ansible.builtin.user:
+    name: "pyroscope"
+    force: true
+    state: absent
+
+- name: uninstall | Remove Pyroscope system group
+  ansible.builtin.group:
+    name: "pyroscope"
+    state: absent

@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: Deploy Pyroscope service
+  ansible.builtin.include_tasks:
+    file: "deploy.yml"
+    apply:
+      tags: pyroscope_deploy
+  tags: pyroscope_deploy
+
+- name: Uninstall Pyroscope service
+  ansible.builtin.include_tasks:
+    file: "uninstall.yml"
+    apply:
+      tags:
+        - pyroscope_uninstall
+        - never
+  tags:
+    - pyroscope_uninstall
+    - never
