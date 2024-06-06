@@ -1,0 +1,88 @@
+{#
+SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+SPDX-FileCopyrightText: 2024 Weytop
+SPDX-FileContributor: ThysTips <contact@thystips.net>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+#}
+target: all
+
+multitenancy_enabled: {{ pyroscope_multitenancy_enabled | default('false') }}
+
+{% if pyroscope_pyroscopedb is defined and pyroscope_pyroscopedb|length > 0 %}
+pyroscopedb:
+  {{ pyroscope_pyroscopedb | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_tracing is defined and pyroscope_tracing|length > 0 %}
+tracing:
+  {{ pyroscope_tracing | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_query_frontend is defined and pyroscope_query_frontend|length > 0 %}
+query_frontend:
+  {{ pyroscope_query_frontend | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_frontend_worker is defined and pyroscope_frontend_worker|length > 0 %}
+frontend_worker:
+  {{ pyroscope_frontend_worker | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_distributor is defined and pyroscope_distributor|length > 0 %}
+distributor:
+  {{ pyroscope_distributor | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_ingester is defined and pyroscope_ingester|length > 0 %}
+ingester:
+  {{ pyroscope_ingester | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_query_scheduler is defined and pyroscope_query_scheduler|length > 0 %}
+query_scheduler:
+  {{ pyroscope_query_scheduler | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_compactor is defined and pyroscope_compactor|length > 0 %}
+compactor:
+  {{ pyroscope_compactor | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_store_gateway is defined and pyroscope_store_gateway|length > 0 %}
+store_gateway:
+  {{ pyroscope_store_gateway | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_querier is defined and pyroscope_querier|length > 0 %}
+querier:
+  {{ pyroscope_querier | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_storage is defined and pyroscope_storage|length > 0 %}
+storage:
+  {{ pyroscope_storage | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_memberlist is defined and pyroscope_memberlist|length > 0 %}
+memberlist:
+  {{ pyroscope_memberlist | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_server is defined and pyroscope_server|length > 0 %}
+server:
+  {{ pyroscope_server | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_limits is defined and pyroscope_limits|length > 0 %}
+limits:
+  {{ pyroscope_limits | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if pyroscope_self_profiling is defined and pyroscope_self_profiling|length > 0 %}
+self_profiling:
+  {{ pyroscope_self_profiling | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+analytics:
+  reporting_enabled: {{ pyroscope_analytics_reporting | default('true') }}

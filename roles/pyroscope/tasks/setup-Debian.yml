@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: setup-Debian | APT - Install Pyroscope
+  ansible.builtin.apt:
+    deb: "{{ pyroscope_download_url_deb }}"
+    state: present
+  notify: Restart pyroscope
+  when: __current_deployed_version.stdout is not defined or pyroscope_version not in __current_deployed_version.stdout

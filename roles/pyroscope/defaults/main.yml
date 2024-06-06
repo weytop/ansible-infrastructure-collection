@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+pyroscope_version: "latest"
+__pyroscope_arch: "{{ pyroscope_arch_mapping[ansible_architecture] | default('amd64') }}"
+pyroscope_base_url: "https://github.com/grafana/pyroscope/releases/download/v{{ pyroscope_version }}"
+pyroscope_download_url_rpm: "{{ pyroscope_base_url }}/pyroscope_{{ pyroscope_version }}_linux_{{ __pyroscope_arch }}.rpm"
+pyroscope_download_url_deb: "{{ pyroscope_base_url }}/pyroscope_{{ pyroscope_version }}_linux_{{ __pyroscope_arch }}.deb"
+
+pyroscope_working_path: "/var/lib/pyroscope"
+pyroscope_http_listen_port: 4040
+pyroscope_http_listen_address: "0.0.0.0"
+pyroscope_log_level: warn
+
+pyroscope_analytics_reporting: true
+
+pyroscope_multitenancy_enabled: false
+
+pyroscope_pyroscopedb:
+  data_dir: "{{ pyroscope_working_path }}/db"
+
+pyroscope_tracing:
+  enabled: true
+
+pyroscope_store_gateway:
+  bucket_store:
+    sync_dir: "{{ pyroscope_working_path }}/sync"
+
+pyroscope_compactor:
+  data_dir: "{{ pyroscope_working_path }}/compactor"
+
+pyroscope_storage:
+  dir: "{{ pyroscope_working_path }}/shared"
+
+pyroscope_server:
+  http_listen_port: "{{ pyroscope_http_listen_port }}"
+  http_listen_address: "{{ pyroscope_http_listen_address }}"
+  log_level: "{{ pyroscope_log_level }}"
+
+# pyroscope_distributor:
+# pyroscope_ingester:
+# pyroscope_querier:
+# pyroscope_query_frontend:
+# pyroscope_frontend_worker:
+# pyroscope_query_scheduler:
+# memberlist:
+# limits:
+# self_profiling:
