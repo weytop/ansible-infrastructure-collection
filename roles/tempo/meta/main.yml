@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+galaxy_info:
+  author: Antoine Thys
+  role_name: tempo
+  description: Install and configure Grafana Tempo
+  company: Weytop
+
+  license: GPL-3.0-or-later
+
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - bionic
+        - xenial
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+    - name: Fedora
+      versions:
+        - "30"
+        - "31"
+
+  galaxy_tags:
+    - grafana
+    - tempo
+    - traces
+    - monnitoring
+
+dependencies: []

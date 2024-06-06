@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: Deploy Tempo service
+  ansible.builtin.include_tasks:
+    file: "deploy.yml"
+    apply:
+      tags: tempo_deploy
+  tags: tempo_deploy
+
+- name: Uninstall Tempo service
+  ansible.builtin.include_tasks:
+    file: "uninstall.yml"
+    apply:
+      tags:
+        - tempo_uninstall
+        - never
+  tags:
+    - tempo_uninstall
+    - never

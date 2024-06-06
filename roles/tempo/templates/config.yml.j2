@@ -1,0 +1,70 @@
+{#
+SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+SPDX-FileCopyrightText: 2024 Weytop
+SPDX-FileContributor: ThysTips <contact@thystips.net>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+#}
+target: all
+
+stream_over_http_enabled: {{ tempo_stream_over_http_enabled | default('true') }}
+
+multitenancy_enabled: {{ tempo_multitenancy_enabled | default('false') }}
+
+{% if tempo_query_frontend is defined and tempo_query_frontend|length > 0 %}
+query_frontend:
+  {{ tempo_query_frontend | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_distributor is defined and tempo_distributor|length > 0 %}
+distributor:
+  {{ tempo_distributor | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_ingester is defined and tempo_ingester|length > 0 %}
+ingester:
+  {{ tempo_ingester | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_compactor is defined and tempo_compactor|length > 0 %}
+compactor:
+  {{ tempo_compactor | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_metrics_generator is defined and tempo_metrics_generator|length > 0 %}
+metrics_generator:
+  {{ tempo_metrics_generator | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_querier is defined and tempo_querier|length > 0 %}
+querier:
+  {{ tempo_querier | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_storage is defined and tempo_storage|length > 0 %}
+storage:
+  {{ tempo_storage | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_memberlist is defined and tempo_memberlist|length > 0 %}
+memberlist:
+  {{ tempo_memberlist | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_server is defined and tempo_server|length > 0 %}
+server:
+  {{ tempo_server | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+{% if tempo_overrides is defined and tempo_overrides|length > 0 %}
+overrides:
+  {{ tempo_overrides | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
+
+usage_report:
+  reporting_enabled: {{ tempo_usage_report | default('true') }}
+
+{% if tempo_cache is defined and tempo_cache|length > 0 %}
+cache:
+  {{ tempo_cache | to_nice_yaml(indent=2, sort_keys=False) | indent(2, False)}}
+{% endif %}
