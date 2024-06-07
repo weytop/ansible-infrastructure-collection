@@ -14,3 +14,4 @@
 
 weytop-infrastructure-*.tar.gz
 tests/output
+dist/

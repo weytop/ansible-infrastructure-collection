@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+ansible = "*"
+voluptuous = "*"
+pyyaml = "*"
+pathspec = "*"
+
+[dev-packages]
+reuse = "*"
+ansible-lint = "*"
+yamllint = "*"
+
+[requires]
+python_version = "3.12"

@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./ansible_collections/weytop/infrastructure
+
+jobs:
+  create-release:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pause until all workflows are completed
+        uses: willgarcia/workflow-wait-action@0.1.0
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v2
+
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          exclude_types: other,perf
+
+      - name: Read CHANGELOG.md
+        id: package
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./CHANGELOG.md
+
+      - name: Write to CHANGELOG.md
+        id: write-changelog
+        uses: DamianReeves/write-file-action@v1.3
+        with:
+          path: ./CHANGELOG.md
+          contents: ${{ steps.changelog.outputs.changelog }}${{ steps.package.outputs.content }}
+          write-mode: overwrite
+
+      - name: Commit and push CHANGELOG.md
+        id: commit-changelog
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: CHANGELOG.md
+          message: "chore: Update CHANGELOG.md"
+          fetch: true
+          tag: "${{ github.ref }} --force"
+          tag_push: '--force'
+
+      - name: Create release
+        id: release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          body: ${{ steps.changelog.outputs.changes }}
+          files: |
+            dist/weytop-infrastructure-${{ github.ref }}.tar.gz

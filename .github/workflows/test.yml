@@ -1,0 +1,98 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: 3.12
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./ansible_collections/weytop/infrastructure
+
+jobs:
+  compliance:
+    runs-on: self-hosted
+    steps:
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v4
+
+      - id: compliance
+        name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v3
+
+  lint:
+    runs-on: self-hosted
+    steps:
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ./ansible_collections/weytop/infrastructure
+
+      - id: setup-python
+        name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pipenv'
+
+      - id: pipenv
+        name: Install pipenv
+        run: |
+          python3 -m pip install pipenv --upgrade
+          pipenv sync --dev --python ${{ env.PYTHON_VERSION }}
+
+      - id: ansible-sanity
+        name: Test Ansible Collection Sanity
+        env:
+          HOME: /root
+        run: pipenv run ansible-test sanity
+
+      - id: ansible-lint
+        name: Lint Ansible Collection
+        env:
+          HOME: /root
+        run: pipenv run ansible-lint
+
+  build:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+    steps:
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ./ansible_collections/weytop/infrastructure
+
+      - id: setup-python
+        name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pipenv'
+
+      - id: pipenv
+        name: Install pipenv
+        run: |
+          python3 -m pip install pipenv --upgrade
+          pipenv sync --dev --python ${{ env.PYTHON_VERSION }}
+
+      - id: dist-clean
+        name: Clean dist directory
+        run: rm -rf dist || true
+
+      - id: build-collection
+        name: Build Ansible Collection
+        env:
+          HOME: /root
+        run: pipenv run ansible-galaxy collection build --force
