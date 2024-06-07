@@ -13,3 +13,4 @@
 # End of https://www.toptal.com/developers/gitignore/api/ansible
 
 weytop-infrastructure-*.tar.gz
+tests/output
