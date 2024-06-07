@@ -74,7 +74,7 @@
     owner: "pyroscope"
     group: "pyroscope"
     mode: "0644"
-    validate: "pyroscope -config.verify -config.file=%s"
+    # validate: "pyroscope -config.verify -config.file=%s" # Not validation argument in Pyroscope
   notify:
     - Restart pyroscope
 

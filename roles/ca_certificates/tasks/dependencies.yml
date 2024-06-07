@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
-- name: dependencies | Get CA
+- name: dependencies | Import Get CA
   ansible.builtin.import_role:
     name: get_1password_ca
   vars:
@@ -13,12 +13,16 @@
     get_1password_ca_delegate_to: "{{ ca_certificates_ca_host }}"
     get_1password_ca_become: "{{ ca_certificates_ca_become }}"
     get_1password_ca_become_user: "{{ ca_certificates_ca_become_user }}"
+  when: (get_1password_ca_public_key_file is not defined
+    or get_1password_ca_private_key_file is not defined
+    or get_1password_ca_private_key_password is not defined)
+    and ca_certificates_ca_1password_item is defined
   tags:
     - get-1password-ca
     - ca-certificates
     - ca-certificates-dependencies
 
-- name: dependencies | Trust CA
+- name: dependencies | Import Trust CA
   ansible.builtin.import_role:
     name: trust_ca
   tags:
@@ -26,7 +30,7 @@
     - ca-certificates
     - ca-certificates-dependencies
 
-- name: dependencies | Create folders
+- name: dependencies | Import Create folders
   ansible.builtin.include_role:
     name: create_folder
     apply:

@@ -75,15 +75,32 @@
   delegate_facts: true
   become: false
   register: ca_certificate
-  notify:
-    - Write fullchain certificate
-    - Write certificate
   tags:
     - ca-certificates
     - ca-certificates-certificate-sign
 
-- name: Flush handlers
-  ansible.builtin.meta: flush_handlers
+- name: Write fullchain certificate # noqa no-handler
+  ansible.builtin.copy:
+    dest: "{{ ca_certificates_fullchain }}"
+    content: |-
+      {{ ca_certificate.certificate | trim }}
+      {{ lookup('file', ca_certificates_ca_cert) | trim }}
+    mode: "{{ ca_certificates_cert_permissions }}"
+    owner: "{{ ca_certificates_cert_owner }}"
+    group: "{{ ca_certificates_cert_group }}"
+  when: ca_certificate is changed
   tags:
     - ca-certificates
-    - ca-certificates-certificate-sign
+    - ca-certificates-certificate-fullchain-write
+
+- name: Write certificate # noqa no-handler
+  ansible.builtin.copy:
+    dest: "{{ ca_certificates_cert }}"
+    content: "{{ ca_certificate.certificate }}"
+    mode: "{{ ca_certificates_cert_permissions }}"
+    owner: "{{ ca_certificates_cert_owner }}"
+    group: "{{ ca_certificates_cert_group }}"
+  when: ca_certificate is changed
+  tags:
+    - ca-certificates
+    - ca-certificates-certificate-write
