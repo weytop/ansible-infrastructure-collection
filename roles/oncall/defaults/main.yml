@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+# Directory where the oncall docker-compose file will be stored
+oncall_directory: /opt/oncall
+# OnCall user and group owner of the directory (user and group must already exist)
+oncall_user: "{{ ansible_user }}"
+oncall_group: "{{ ansible_user }}"
+
+oncall_docker_compose_source: docker-compose.yml
+oncall_docker_compose_destination: "{{ oncall_directory }}/docker-compose.yml"
+
+oncall_env_template: oncall.env.j2
+oncall_env_destination: "{{ oncall_directory }}/.env"
+
+oncall_published_port: 8585
+oncall_external_url: "http://localhost:{{ oncall_published_port }}"
+
+oncall_grafana_api: "http://grafana:3000"
+
+oncall_metrics_enabled: false
+oncall_metrics_secret: "{{ lookup('ansible.builtin.password', '/dev/null', seed=inventory_hostname, length=12) }}"
+oncall_metrics_secret_file: "{{ oncall_directory }}/metrics_secret"
+
+oncall_secret: "{{ lookup('ansible.builtin.password', '/dev/null', seed=inventory_hostname, length=64) }}"
+
+oncall_mysql_password: "{{ lookup('ansible.builtin.password', '/dev/null', seed=inventory_hostname, length=32) }}"
+oncall_rabbitmq_password: "{{ lookup('ansible.builtin.password', '/dev/null', seed=inventory_hostname, length=32) }}"

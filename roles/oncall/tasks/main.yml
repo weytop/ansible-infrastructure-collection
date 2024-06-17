@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: Create oncall directory
+  ansible.builtin.file:
+    path: "{{ oncall_directory }}"
+    state: directory
+    owner: "{{ oncall_user }}"
+    group: "{{ oncall_group }}"
+    mode: '0755'
+
+- name: Copy docker-compose file
+  ansible.builtin.copy:
+    src: "{{ oncall_docker_compose_source }}"
+    dest: "{{ oncall_docker_compose_destination }}"
+    owner: "{{ oncall_user }}"
+    group: "{{ oncall_group }}"
+    mode: '0644'
+
+- name: Create oncall .env file
+  ansible.builtin.template:
+    src: "{{ oncall_env_template }}"
+    dest: "{{ oncall_env_destination }}"
+    owner: "{{ oncall_user }}"
+    group: "{{ oncall_group }}"
+    mode: '0644'
+
+- name: Write monitoring secret to file
+  ansible.builtin.copy:
+    content: "{{ oncall_metrics_secret }}"
+    dest: "{{ oncall_metrics_secret_file }}"
+    owner: "{{ oncall_user }}"
+    group: "adm"
+    mode: '0640'
+
+- name: Start oncall docker-compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ oncall_directory }}"
+    wait: true
