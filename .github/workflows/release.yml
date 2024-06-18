@@ -49,17 +49,6 @@ jobs:
           contents: ${{ steps.changelog.outputs.changelog }}${{ steps.package.outputs.content }}
           write-mode: overwrite
 
-      - name: Commit and push CHANGELOG.md
-        id: commit-changelog
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: CHANGELOG.md
-          message: "chore: Update CHANGELOG.md"
-          fetch: true
-          tag: "${{ github.ref }} --force"
-          push: 'origin HEAD:main --follow-tags --force'
-          # tag_push: '--force'
-
       - name: Create release
         id: release
         uses: softprops/action-gh-release@v2
@@ -71,3 +60,10 @@ jobs:
           body: ${{ steps.changelog.outputs.changes }}
           files: |
             dist/weytop-infrastructure-${{ github.ref }}.tar.gz
+
+      - name: Commit CHANGELOG.md
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: main
+          commit_message: 'chore: update CHANGELOG.md for ${{ github.ref_name }} [skip ci]'
+          file_pattern: CHANGELOG.md

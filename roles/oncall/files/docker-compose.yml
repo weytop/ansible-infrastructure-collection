@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 x-environment: &oncall-environment
   BASE_URL: $DOMAIN
   SECRET_KEY: $SECRET_KEY
