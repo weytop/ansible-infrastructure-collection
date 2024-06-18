@@ -1,3 +1,19 @@
+# 1.2.0 - 2024-06-18
+
+## New Features
+- **role:** Add role oncall_docker
+
+## Bugfixes
+- Remove handlers from ca_certificates role
+- sanity tests on licence
+- github ci
+- release and workflow order and exec
+
+## Chores
+- Update CHANGELOG.md
+- fix license
+- changelog regression
+
 # 1.0.0 - 2024-04-22
 
 ### New Features
