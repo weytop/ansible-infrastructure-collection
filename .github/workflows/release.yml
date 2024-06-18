@@ -53,10 +53,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes }}
           files: |
-            dist/weytop-infrastructure-${{ github.ref }}.tar.gz
+            dist/weytop-infrastructure-${{ github.ref_name }}.tar.gz
 
       - name: Commit CHANGELOG.md
         uses: stefanzweifel/git-auto-commit-action@v4
