@@ -1,21 +1,6 @@
-# 1.2.0 - 2024-06-18
+# 1.0.0 - 2024-04-22
 
-## New Features
-- **role:** Add role oncall_docker
-
-## Bugfixes
-- Remove handlers from ca_certificates role
-- sanity tests on licence
-- github ci
-
-## Chores
-- dump version 1.2.0
-
-# Weytop Ansible infrastructure collection
-
-## 1.0.0 (2024-04-22)
-
-### Added
+### New Features
 
 - Initial release
 - Migrate existing Ansible roles to collections
