@@ -57,7 +57,8 @@ jobs:
           message: "chore: Update CHANGELOG.md"
           fetch: true
           tag: "${{ github.ref }} --force"
-          tag_push: '--force'
+          push: 'origin HEAD:main --follow-tags --force'
+          # tag_push: '--force'
 
       - name: Create release
         id: release
