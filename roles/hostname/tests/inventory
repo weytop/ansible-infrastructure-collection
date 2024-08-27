@@ -4,10 +4,5 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
----
-- name: Add line in /etc/hosts file
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    line: "{{ item.ip }} {{ item.entry }}"
-  loop: "{{ hosts_file_entries }}"
-  tags: hosts_file
+localhost
+
