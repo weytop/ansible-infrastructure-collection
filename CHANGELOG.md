@@ -1,3 +1,14 @@
+# 1.2.1 - 2024-08-28
+
+## New Features
+- add role hosts_file
+
+## Bugfixes
+- release ref naming
+
+## Chores
+- update CHANGELOG.md for 1.2.0 [skip ci]
+
 # 1.2.0 - 2024-06-18
 
 ## New Features
