@@ -11,3 +11,9 @@
     line: "{{ item.ip }} {{ item.entry }}"
   loop: "{{ hosts_file_entries }}"
   tags: hosts_file
+
+- name: Remove line from /etc/hosts file
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    state: absent
+    regexp: '^127.0.1.1'
