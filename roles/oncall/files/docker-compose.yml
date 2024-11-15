@@ -1,8 +1,7 @@
-# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
-# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileCopyrightText: 2007 Free Software Foundation, Inc
 # SPDX-FileContributor: ThysTips <contact@thystips.net>
 #
-# SPDX-License-Identifier: CC0-1.0
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 x-environment: &oncall-environment
   BASE_URL: $DOMAIN
