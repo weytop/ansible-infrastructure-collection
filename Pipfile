@@ -4,11 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ansible = "*"
 voluptuous = "*"
 pyyaml = "*"
 pathspec = "*"
 packaging = "*"
+jmespath = "*"
+ansible-core = "*"
+ansible = "*"
 
 [dev-packages]
 reuse = "*"
