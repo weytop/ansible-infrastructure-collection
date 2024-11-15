@@ -8,6 +8,7 @@ ansible = "*"
 voluptuous = "*"
 pyyaml = "*"
 pathspec = "*"
+packaging = "*"
 
 [dev-packages]
 reuse = "*"
