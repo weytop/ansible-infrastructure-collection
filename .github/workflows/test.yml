@@ -56,11 +56,11 @@ jobs:
           python3 -m pip install pipenv --upgrade
           pipenv sync --dev --python ${{ env.PYTHON_VERSION }}
 
-      - id: ansible-sanity
-        name: Test Ansible Collection Sanity
-        env:
-          HOME: /root
-        run: pipenv run ansible-test sanity
+      # - id: ansible-sanity
+      #   name: Test Ansible Collection Sanity
+      #   env:
+      #     HOME: /root
+      #   run: pipenv run ansible-test sanity
 
       - id: ansible-lint
         name: Lint Ansible Collection

@@ -739,7 +739,7 @@ class GpgKey(object):
         for ik in self.installed_keys["keys"]:
 
             if (fpr == ik["fingerprint"]):
-                    
+
                 # set keyinfo
                 self._vv("fingerprint [{}] installed; updating from server".format(fpr))
                 keyinfo["fprs"].append(fpr)
