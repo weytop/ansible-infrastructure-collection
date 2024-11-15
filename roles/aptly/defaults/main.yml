@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: 2024 Weytop
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+# Aptly user configuration
+aptly_user: aptly
+aptly_group: aptly
+aptly_home: /var/lib/aptly
+
+aptly_listen: 127.0.0.1:8000
+
+# Aptly configuration template
+aptly_json_config:
+  rootDir: "{{ aptly_home }}/repos"
+  downloadConcurrency: 4
+  downloadSpeedLimit: 0
+  architectures: [amd64]
+  dependencyFollowSuggests: false
+  dependencyFollowRecommends: false
+  dependencyFollowAllVariants: false
+  dependencyFollowSource: false
+  dependencyVerboseResolve: false
+  gpgDisableSign: false
+  gpgDisableVerify: false
+  gpgProvider: "gpg"
+  downloadSourcePackages: false
+  skipLegacyPool: true
+  ppaDistributorID: "{{ ansible_distribution }}"
+  ppaCodename: "{{ ansible_distribution_release }}"
+
+  FileSystemPublishEndpoints:
+    local:
+      rootDir: "/srv/aptly/public"
+      linkMethod: "copy"
+      verifyMethod: "md5"
+  S3PublishEndpoints: {}
+  SwiftPublishEndpoints: {}
+
+  enableMetricsEndpoint: true
+  logLevel: "info"
+  logFormat: "default"
+  serveInAPIMode: true
+
+aptly_gpg_private_key: ""
+aptly_gpg_public_key: ""

@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2024 Weytop
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+galaxy_info:
+  author: Antoine Thys
+  description: Install aptly for managing debian repositories
+  company: Weytop
+
+  license: GPL-3.0-or-later
+
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+
+  galaxy_tags:
+    - packaging
+    - ubuntu
+    - aptly
+    - apt

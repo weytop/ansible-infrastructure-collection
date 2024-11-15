@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2024 Weytop
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: Daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart aptly
+  ansible.builtin.systemd:
+    name: aptly
+    state: restarted

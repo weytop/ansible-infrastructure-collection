@@ -1,0 +1,10 @@
+{#
+SPDX-FileCopyrightText: 2024 Weytop
+SPDX-License-Identifier: GPL-3.0-or-later
+#}
+[Service]
+User={{ aptly_user }}
+Group={{ aptly_group }}
+WorkingDirectory={{ aptly_home }}
+ExecStart=
+ExecStart=/usr/bin/aptly api serve -no-lock -listen={{ aptly_listen }}
