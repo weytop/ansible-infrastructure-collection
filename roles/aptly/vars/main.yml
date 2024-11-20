@@ -4,3 +4,9 @@
 
 ---
 aptly_template_source: aptly.conf.j2
+aptly_install_packages:
+  - aptly
+  - gnupg2
+  - inoticoming
+  - curl
+  - acl

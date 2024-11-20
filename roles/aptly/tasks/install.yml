@@ -1,0 +1,99 @@
+# SPDX-FileCopyrightText: 2024 Weytop
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: install | Aptly repository
+  block:
+    - name: install | Download GPG key
+      ansible.builtin.get_url:
+        url: https://www.aptly.info/pubkey.txt
+        dest: /etc/apt/keyrings/aptly.asc
+        mode: "0644"
+    - name: install | Add aptly repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/aptly.asc] http://repo.aptly.info/ squeeze main" # Don't worry about squeeze : https://www.aptly.info/download/
+        state: present
+        filename: aptly
+        update_cache: true
+
+- name: install | Packages
+  ansible.builtin.apt:
+    name: "{{ aptly_install_packages }}"
+    state: present
+    update_cache: true
+
+- name: install | Create aptly group
+  ansible.builtin.group:
+    name: "{{ aptly_group }}"
+    state: present
+
+- name: install | Create aptly user
+  ansible.builtin.user:
+    name: "{{ aptly_user }}"
+    group: "{{ aptly_group }}"
+    home: "{{ aptly_home }}"
+    shell: /usr/bin/bash
+    create_home: true
+    system: true
+    state: present
+
+- name: install | Create aptly root directory
+  ansible.builtin.file:
+    path: "{{ aptly_json_config.rootDir }}"
+    state: directory
+    owner: "{{ aptly_user }}"
+    group: "{{ aptly_group }}"
+    mode: "0755"
+
+- name: install | Create aptly configuration
+  ansible.builtin.template:
+    src: "{{ aptly_template_source }}"
+    dest: "/etc/aptly.conf"
+    mode: "0644"
+    backup: true
+  notify: Restart aptly
+
+- name: install | Create aptly.service.d directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/aptly.service.d/
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: install | Copy aptly service override
+  ansible.builtin.template:
+    src: aptly.service.j2
+    dest: /etc/systemd/system/aptly.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Daemon reload
+    - Restart aptly
+
+- name: install | Create aptly file system publish directories
+  when: aptly_json_config.FileSystemPublishEndpoints is defined and aptly_json_config.FileSystemPublishEndpoints | length > 0
+  with_items: "{{ aptly_json_config.FileSystemPublishEndpoints | json_query('*.rootDir') }}"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ aptly_user }}"
+    group: "{{ aptly_group }}"
+    mode: "0755"
+
+- name: install | Ensure aptly service is running and enabled
+  ansible.builtin.systemd:
+    name: aptly
+    state: started
+    enabled: true
+
+- name: install | Wait API to be available
+  ansible.builtin.uri:
+    url: "http://{{ aptly_listen }}/api/ready"
+    method: GET
+  register: _result
+  until: _result.status == 200
+  retries: 12
+  delay: 5

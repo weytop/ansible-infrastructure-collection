@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2024 Weytop
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: gpg | Import public key
+  weytop.infrastructure.gpg_key:
+    content: "{{ aptly_gpg_public_key }}"
+    manage_trust: false
+    state: present
+  register: gpg_public_key
+  become: true
+  become_user: "{{ aptly_user }}"
+
+- name: gpg | Import private key
+  weytop.infrastructure.gpg_key:
+    content: "{{ aptly_gpg_private_key }}"
+    manage_trust: false
+    state: present
+  register: gpg_private_key
+  become: true
+  become_user: "{{ aptly_user }}"
+
+- name: gpg | Trust public key
+  weytop.infrastructure.gpg_key:
+    fpr: "{{ aptly_gpg_fpr }}"
+    manage_trust: true
+    trust: 5
+  changed_when: gpg_public_key.changed or gpg_private_key.changed
+  become: true
+  become_user: "{{ aptly_user }}"

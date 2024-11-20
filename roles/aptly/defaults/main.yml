@@ -3,14 +3,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
-# Aptly user configuration
+# User running aptly api service
 aptly_user: aptly
+# Group running aptly api service
 aptly_group: aptly
+# Home directory of aptly user
 aptly_home: /var/lib/aptly
 
+# Aptly api listen address
 aptly_listen: 127.0.0.1:8000
 
-# Aptly configuration template
+# Aptly configuration template file as yaml dictionary and convert to nice json format
+# See https://www.aptly.info/doc/configuration/ for configuration options
 aptly_json_config:
   rootDir: "{{ aptly_home }}/repos"
   downloadConcurrency: 4
@@ -31,7 +35,7 @@ aptly_json_config:
 
   FileSystemPublishEndpoints:
     local:
-      rootDir: "/srv/aptly/public"
+      rootDir: "/srv/aptly/local"
       linkMethod: "copy"
       verifyMethod: "md5"
   S3PublishEndpoints: {}
@@ -42,5 +46,19 @@ aptly_json_config:
   logFormat: "default"
   serveInAPIMode: true
 
+# GPG Private key content to import into aptly user keyring
 aptly_gpg_private_key: ""
+# GPG Public key content to import into aptly user keyring
 aptly_gpg_public_key: ""
+# Fingerprint of GPG public key to trust
+aptly_gpg_fpr: ""
+
+# List of repositories to create
+aptly_repositories: []
+  # - name: app_testing
+  #   comment: App Nightly builds
+  #   distribution: noble
+  #   component: testing (main if not specified)
+  # - name: app_stable
+  #   comment: App Stable builds
+  #   distribution: noble

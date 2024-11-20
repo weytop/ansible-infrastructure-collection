@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2024 Weytop
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: repository | Create repositories
+  ansible.builtin.uri:
+    url: "http://{{ aptly_listen }}/api/repos"
+    method: POST
+    body_format: json
+    body: |
+      {
+        "Name": "{{ item.name | default('') | to_nice_json }}",
+        "Comment": "{{ item.comment | default('') | to_nice_json }}",
+        "DefaultDistribution": "{{ item.distribution | default('') | to_nice_json }}",
+        "DefaultComponent": "{{ item.component | default('main') | to_nice_json }}"
+      }
+  with_items: "{{ aptly_repositories }}"
