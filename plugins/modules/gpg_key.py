@@ -1,15 +1,16 @@
 #!/usr/bin/python
 
 # Copyright: (c) 2019, Rinck H. Sonnenberg - Netson <r.sonnenberg@netson.nl>
+# Copyright: (c) 2024, Antoine Thys - Weytop <athys@weytop.com>
 # License: MIT
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1',
-    'status': ['preview'],
-    'supported_by': 'community'
+    "metadata_version": "1.1",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: gpg_key
 short_description: Module to install and trust GPG keys
@@ -77,7 +78,7 @@ options:
         - 4
         - 5
         default: 1
-        type: str
+        type: int
     state:
         description: |
             Key should be present, absent, latest (keyserver only) or info.
@@ -118,9 +119,10 @@ options:
 
 author:
     - Rinck H. Sonnenberg (r.sonnenberg@netson.nl)
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
+---
 # install key from keyfile on target host and set trust level to 5
 - name: add key(s) from file and set trust
   gpg_key:
@@ -152,7 +154,7 @@ EXAMPLES = '''
   gpg_key:
     fpr: 0D69E11F12BDBA077B3726AB4E1F799AA4FF2279
     keyserver: eu.pool.sks-keyservers.net
-	trust: '5'
+    trust: '5'
 
 # delete a key from the target machine
 - name: remove a key from the target machine
@@ -171,9 +173,9 @@ EXAMPLES = '''
   gpg_key:
     fpr: '*'
     state: info
-'''
+"""
 
-RETURN = '''
+RETURN = """
 keys:
     description: |
         list of keys touched by the module;
@@ -207,17 +209,18 @@ debug:
     description: contains debug information
     type: list
     returned: when verbosity >= 2
-'''
+"""
 
-import re
 import os
+import re
 import time
+
 from ansible.module_utils.basic import AnsibleModule
 from packaging import version
 
+
 # class to import GPG keys
 class GpgKey(object):
-
 
     def __init__(self, module):
         """
@@ -242,8 +245,7 @@ class GpgKey(object):
 
         # set gpg binary none was provided
         if not self.module.params["gpgbin"] or self.module.params["gpgbin"] is None:
-            self.module.params["gpgbin"] = self.module.get_bin_path('gpg')
-
+            self.module.params["gpgbin"] = self.module.get_bin_path("gpg")
 
     def _vv(self, msg):
         """
@@ -252,13 +254,11 @@ class GpgKey(object):
         # add debug message
         self.debugmsg.append("{}".format(msg))
 
-
     def has_method(self, name):
         """
         method to check if other methods exist
         """
         return callable(getattr(self, name, None))
-
 
     def run(self):
         """
@@ -277,30 +277,35 @@ class GpgKey(object):
         elif self.module.params["content"]:
             run_action = "content"
         else:
-            self.module.fail_json(msg="You shouldn't be here; no valid action could be determined")
+            self.module.fail_json(
+                msg="You shouldn't be here; no valid action could be determined"
+            )
 
         # determine action and method
-        run_state  = self.module.params["state"]
+        run_state = self.module.params["state"]
         run_method = "run_{}_{}".format(run_action, run_state)
         self._vv("determined action [{}] with state [{}]".format(run_action, run_state))
 
         # always check installed keys first
         self.check_installed_keys()
-        #self.result["installed_keys"] = self.installed_keys
+        # self.result["installed_keys"] = self.installed_keys
 
         # check if run method exists, and if not fail with an error
         if self.has_method(run_method):
             getattr(self, run_method)()
         else:
-            self.module.fail_json(msg="Action [{}] is not supported with state [{}]".format(run_action, run_state))
+            self.module.fail_json(
+                msg="Action [{}] is not supported with state [{}]".format(
+                    run_action, run_state
+                )
+            )
 
         # check verbosity and add debug messages
         if self.module._verbosity >= 2:
-            self.result['debug'] = "\n".join(self.debugmsg)
+            self.result["debug"] = "\n".join(self.debugmsg)
 
         # return result
         return self.result
-
 
     def run_file_present(self):
         """
@@ -321,33 +326,44 @@ class GpgKey(object):
         for index, fk in enumerate(keyinfo["keys"]):
 
             # check expiration by checking trust
-            if fk["trust_level"] in ['i','d','r','e']:
-                self.module.fail_json(msg="key is either expired or invalid [trust={}] [expiration={}]".format(fk["trust_level"], fk["expirationdate"]))
+            if fk["trust_level"] in ["i", "d", "r", "e"]:
+                self.module.fail_json(
+                    msg="key is either expired or invalid [trust={}] [expiration={}]".format(
+                        fk["trust_level"], fk["expirationdate"]
+                    )
+                )
 
             # check if key is installed
             installed = False
             for ik in self.installed_keys["keys"]:
-                if (fk["fingerprint"].upper() == ik["fingerprint"].upper() and
-                    fk["type"] == ik["type"] and
-                    fk["key_capabilities"] == ik["key_capabilities"]
-                   ):
-                    self._vv("fingerprint [{}] already installed".format(fk["fingerprint"]))
+                if (
+                    fk["fingerprint"].upper() == ik["fingerprint"].upper()
+                    and fk["type"] == ik["type"]
+                    and fk["key_capabilities"] == ik["key_capabilities"]
+                ):
+                    self._vv(
+                        "fingerprint [{}] already installed".format(fk["fingerprint"])
+                    )
                     keyinfo["keys"][index]["state"] = "present"
                     keyinfo["keys"][index]["changed"] = False
                     installed = True
 
                     # check trust
-                    if not self.compare_trust(fk["trust_level"], self.module.params["trust"]):
+                    if not self.compare_trust(
+                        fk["trust_level"], self.module.params["trust"]
+                    ):
 
                         # update trust level
                         self.set_trust(fk["fingerprint"], self.module.params["trust"])
                         trucnt += 1
 
                         # get trust level as displayed by gpg
-                        tru_level, tru_desc = self.get_trust(self.module.params["trust"])
+                        tru_level, tru_desc = self.get_trust(
+                            self.module.params["trust"]
+                        )
                         keyinfo["keys"][index]["changed"] = True
                         keyinfo["keys"][index]["trust_level"] = tru_level
-                        keyinfo["keys"][index]["trust_level_desc"] = tru_desc                                       
+                        keyinfo["keys"][index]["trust_level_desc"] = tru_desc
 
                     continue
 
@@ -360,13 +376,17 @@ class GpgKey(object):
 
                 # run subprocess
                 rc, stdout, stderr = self.module.run_command(args=cmd, check_rc=True)
-                self._vv("fingerprint [{}] successfully imported".format(fk["fingerprint"]))
+                self._vv(
+                    "fingerprint [{}] successfully imported".format(fk["fingerprint"])
+                )
                 keyinfo["keys"][index]["state"] = "present"
                 keyinfo["keys"][index]["changed"] = True
                 impcnt += 1
 
                 # check trust
-                if not self.compare_trust(fk["trust_level"], self.module.params["trust"]):
+                if not self.compare_trust(
+                    fk["trust_level"], self.module.params["trust"]
+                ):
 
                     # update trust level
                     self.set_trust(fk["fingerprint"], self.module.params["trust"])
@@ -386,9 +406,10 @@ class GpgKey(object):
             self.result["changed"] = True
 
         # set message and return
-        self.result["msg"] = "[{}] keys were imported; [{}] trust levels updated".format(impcnt, trucnt)
+        self.result["msg"] = (
+            "[{}] keys were imported; [{}] trust levels updated".format(impcnt, trucnt)
+        )
         return True
-
 
     def run_file_absent(self):
         """
@@ -408,21 +429,30 @@ class GpgKey(object):
         for index, fk in enumerate(keyinfo["keys"]):
             installed = False
             for ik in self.installed_keys["keys"]:
-                if (fk["fingerprint"].upper() == ik["fingerprint"].upper() and
-                    fk["type"] == ik["type"] and
-                    fk["key_capabilities"] == ik["key_capabilities"]
-                   ):
+                if (
+                    fk["fingerprint"].upper() == ik["fingerprint"].upper()
+                    and fk["type"] == ik["type"]
+                    and fk["key_capabilities"] == ik["key_capabilities"]
+                ):
                     installed = True
                     continue
 
             if not installed:
-                self._vv("fingerprint [{}] not installed; nothing to remove".format(fk["fingerprint"]))
+                self._vv(
+                    "fingerprint [{}] not installed; nothing to remove".format(
+                        fk["fingerprint"]
+                    )
+                )
                 keyinfo["keys"][index]["state"] = "absent"
                 keyinfo["keys"][index]["changed"] = False
 
             else:
 
-                self._vv("fingerprint [{}] installed; will be removed".format(fk["fingerprint"]))
+                self._vv(
+                    "fingerprint [{}] installed; will be removed".format(
+                        fk["fingerprint"]
+                    )
+                )
 
                 # remove file
                 cmd = self.prepare_command("file", "absent")
@@ -432,7 +462,9 @@ class GpgKey(object):
 
                 # run subprocess
                 rc, stdout, stderr = self.module.run_command(args=cmd, check_rc=True)
-                self._vv("fingerprint [{}] successfully removed".format(fk["fingerprint"]))
+                self._vv(
+                    "fingerprint [{}] successfully removed".format(fk["fingerprint"])
+                )
                 keyinfo["keys"][index]["state"] = "absent"
                 keyinfo["keys"][index]["changed"] = True
                 keycnt += 1
@@ -453,7 +485,6 @@ class GpgKey(object):
         self.result["msg"] = "[{}] keys were removed".format(keycnt)
         return True
 
-
     def run_file_info(self):
         """
         method to only retrive current status of keys
@@ -472,10 +503,11 @@ class GpgKey(object):
             # check if key is installed
             installed = False
             for ik in self.installed_keys["keys"]:
-                if (fk["fingerprint"].upper() == ik["fingerprint"].upper() and
-                    fk["type"] == ik["type"] and
-                    fk["key_capabilities"] == ik["key_capabilities"]
-                   ):
+                if (
+                    fk["fingerprint"].upper() == ik["fingerprint"].upper()
+                    and fk["type"] == ik["type"]
+                    and fk["key_capabilities"] == ik["key_capabilities"]
+                ):
                     self._vv("fingerprint [{}] installed".format(fk["fingerprint"]))
                     keyinfo["keys"][index]["state"] = "present"
                     keyinfo["keys"][index]["changed"] = False
@@ -494,7 +526,6 @@ class GpgKey(object):
         # set message and return
         return True
 
-
     def run_content_present(self):
         """
         import keys from content
@@ -508,7 +539,6 @@ class GpgKey(object):
 
         # delete content
         self.delete_content(filename)
-
 
     def run_content_absent(self):
         """
@@ -524,7 +554,6 @@ class GpgKey(object):
         # delete content
         self.delete_content(filename)
 
-
     def run_content_info(self):
         """
         get key info from content
@@ -538,7 +567,6 @@ class GpgKey(object):
 
         # delete content
         self.delete_content(filename)
-
 
     def run_fpr_present(self):
         """
@@ -554,15 +582,15 @@ class GpgKey(object):
         impcnt = 0
         trucnt = 0
         keyinfo = {
-            'fprs': [],
-            'keys': [],
+            "fprs": [],
+            "keys": [],
         }
 
         # check if key is installed
         for ik in self.installed_keys["keys"]:
 
-            if (fpr.upper() == ik["fingerprint"].upper()):
-                    
+            if fpr.upper() == ik["fingerprint"].upper():
+
                 # set keyinfo
                 self._vv("fingerprint [{}] already installed".format(fpr))
                 keyinfo["fprs"].append(fpr)
@@ -572,7 +600,9 @@ class GpgKey(object):
                 installed = True
 
                 # check trust
-                if not self.compare_trust(ik["trust_level"], self.module.params["trust"]):
+                if not self.compare_trust(
+                    ik["trust_level"], self.module.params["trust"]
+                ):
 
                     # update trust level
                     self.set_trust(fpr, self.module.params["trust"])
@@ -582,7 +612,7 @@ class GpgKey(object):
                     tru_level, tru_desc = self.get_trust(self.module.params["trust"])
                     keyinfo["keys"][0]["changed"] = True
                     keyinfo["keys"][0]["trust_level"] = tru_level
-                    keyinfo["keys"][0]["trust_level_desc"] = tru_desc                                       
+                    keyinfo["keys"][0]["trust_level_desc"] = tru_desc
 
                 continue
 
@@ -596,7 +626,9 @@ class GpgKey(object):
 
             # run subprocess
             rc, stdout, stderr = self.module.run_command(args=cmd, check_rc=True)
-            self._vv("fingerprint [{}] successfully imported from keyserver".format(fpr))
+            self._vv(
+                "fingerprint [{}] successfully imported from keyserver".format(fpr)
+            )
 
             # get info from specific key; keyservers only contain public keys
             # so no point in checking the secret keys
@@ -606,12 +638,17 @@ class GpgKey(object):
             keyinfo = self.process_colons(stdout)
 
             # check expiration by checking trust
-            if keyinfo["keys"][0]["trust_level"] in ['i','d','r','e']:
+            if keyinfo["keys"][0]["trust_level"] in ["i", "d", "r", "e"]:
                 # deleted the expired key and fail
                 cmd = self.prepare_command("fpr", "absent")
                 cmd += [fpr]
                 rc, stdout, stderr = self.module.run_command(args=cmd, check_rc=True)
-                self.module.fail_json(msg="key is either expired or invalid [trust={}] [expiration={}]".format(keyinfo["keys"][0]["trust_level"], keyinfo["keys"][0]["expirationdate"]))
+                self.module.fail_json(
+                    msg="key is either expired or invalid [trust={}] [expiration={}]".format(
+                        keyinfo["keys"][0]["trust_level"],
+                        keyinfo["keys"][0]["expirationdate"],
+                    )
+                )
 
             # update key info
             keyinfo["keys"][0]["state"] = "present"
@@ -619,7 +656,9 @@ class GpgKey(object):
             impcnt += 1
 
             # check trust
-            if not self.compare_trust(keyinfo["keys"][0]["trust_level"], self.module.params["trust"]):
+            if not self.compare_trust(
+                keyinfo["keys"][0]["trust_level"], self.module.params["trust"]
+            ):
 
                 # update trust level
                 self.set_trust(fpr, self.module.params["trust"])
@@ -639,9 +678,10 @@ class GpgKey(object):
             self.result["changed"] = True
 
         # set message and return
-        self.result["msg"] = "[{}] keys were imported; [{}] trust levels updated".format(impcnt, trucnt)
+        self.result["msg"] = (
+            "[{}] keys were imported; [{}] trust levels updated".format(impcnt, trucnt)
+        )
         return True
-
 
     def run_fpr_absent(self):
         """
@@ -656,8 +696,8 @@ class GpgKey(object):
         installed = False
         keycnt = 0
         keyinfo = {
-            'fprs': [],
-            'keys': [],
+            "fprs": [],
+            "keys": [],
         }
 
         # see if the key is installed or not
@@ -675,9 +715,9 @@ class GpgKey(object):
             self._vv("fingerprint [{}] not installed; nothing to remove".format(fpr))
             key = {}
             key[fpr] = {
-                "state"         : "absent",
-                "changed"       : False,
-                "fingerprint"   : fpr,
+                "state": "absent",
+                "changed": False,
+                "fingerprint": fpr,
             }
             keyinfo["fprs"].append(fpr)
             keyinfo["keys"].append(key)
@@ -715,7 +755,6 @@ class GpgKey(object):
         self.result["msg"] = "[{}] keys were removed".format(keycnt)
         return True
 
-
     def run_fpr_latest(self):
         """
         get the latest key from the keyserver
@@ -731,14 +770,14 @@ class GpgKey(object):
         updcnt = 0
         trucnt = 0
         keyinfo = {
-            'fprs': [],
-            'keys': [],
+            "fprs": [],
+            "keys": [],
         }
 
         # check if key is installed
         for ik in self.installed_keys["keys"]:
 
-            if (fpr == ik["fingerprint"]):
+            if fpr == ik["fingerprint"]:
 
                 # set keyinfo
                 self._vv("fingerprint [{}] installed; updating from server".format(fpr))
@@ -768,7 +807,7 @@ class GpgKey(object):
 
             # see if any updates were downloaded or not
             # for some reason, gpg outputs these messages to stderr
-            updated = re.search('gpg:\s+unchanged: 1\n', stderr) is None
+            updated = re.search(r"gpg:\s+unchanged: 1\n", stderr) is None
             if updated:
                 updcnt += 1
 
@@ -785,19 +824,26 @@ class GpgKey(object):
             keyinfo = self.process_colons(stdout)
 
             # check expiration by checking trust
-            if keyinfo["keys"][0]["trust_level"] in ['i','d','r','e']:
+            if keyinfo["keys"][0]["trust_level"] in ["i", "d", "r", "e"]:
                 # deleted the expired key and fail
                 cmd = self.prepare_command("fpr", "absent")
                 cmd += [fpr]
                 rc, stdout, stderr = self.module.run_command(args=cmd, check_rc=True)
-                self.module.fail_json(msg="key is either expired or invalid [trust={}] [expiration={}]".format(keyinfo["keys"][0]["trust_level"], keyinfo["keys"][0]["expirationdate"]))
+                self.module.fail_json(
+                    msg="key is either expired or invalid [trust={}] [expiration={}]".format(
+                        keyinfo["keys"][0]["trust_level"],
+                        keyinfo["keys"][0]["expirationdate"],
+                    )
+                )
 
             # update key info
             keyinfo["keys"][0]["state"] = "present"
             keyinfo["keys"][0]["changed"] = True
 
             # check trust
-            if not self.compare_trust(keyinfo["keys"][0]["trust_level"], self.module.params["trust"]):
+            if not self.compare_trust(
+                keyinfo["keys"][0]["trust_level"], self.module.params["trust"]
+            ):
 
                 # update trust level
                 self.set_trust(fpr, self.module.params["trust"])
@@ -817,9 +863,10 @@ class GpgKey(object):
             self.result["changed"] = True
 
         # set message and return
-        self.result["msg"] = "[{}] keys were updated; [{}] trust levels updated".format(updcnt, trucnt)
+        self.result["msg"] = "[{}] keys were updated; [{}] trust levels updated".format(
+            updcnt, trucnt
+        )
         return True
-
 
     def run_fpr_info(self):
         """
@@ -868,7 +915,6 @@ class GpgKey(object):
         self.set_keyinfo(keyinfo)
         self.result["msg"] = "listing info for [{}] key(s)".format(keycount)
 
-
     def prepare_content(self, content):
         """
         prepare content
@@ -876,13 +922,12 @@ class GpgKey(object):
         # create temporary file and write contents
         filename = "tmp-gpg-{}.asc".format(time.time())
         self._vv("writing content to temporary file [{}]".format(filename))
-        tmpfile = open("{}".format(filename),"w+")
+        tmpfile = open("{}".format(filename), "w+")
         tmpfile.write(content)
         tmpfile.close()
 
         # return filename
         return filename
-
 
     def delete_content(self, filename):
         """
@@ -891,7 +936,6 @@ class GpgKey(object):
         # cleanup
         self._vv("deleting temporary file [{}]".format(filename))
         os.remove(filename)
-
 
     def prepare_command(self, action, state):
         """
@@ -911,6 +955,7 @@ class GpgKey(object):
 
         # determine if keyring was set
         if self.module.params["keyring"]:
+            cmd.append("--no-default-keyring")
             cmd.append("--keyring")
             cmd.append(self.module.params["keyring"])
 
@@ -946,7 +991,7 @@ class GpgKey(object):
         # file present
         if action == "file" and state == "present":
             args = [
-		  "--batch",
+                "--batch",
                 "--import",
                 self.module.params["file"],
             ]
@@ -994,7 +1039,6 @@ class GpgKey(object):
         self._vv("running command [{}]".format(" ".join(cmd)))
         return cmd
 
-
     def check_versions(self):
         """
         function to verify we have the right gnupg2 version
@@ -1016,7 +1060,11 @@ class GpgKey(object):
 
         # sanity check
         if match_gpg is None or match_gpg.group(1) is None:
-            self.module.fail_json(msg="could not find a valid gpg version number in string [{}]".format(lines[0]))
+            self.module.fail_json(
+                msg="could not find a valid gpg version number in string [{}]".format(
+                    lines[0]
+                )
+            )
 
         # find libgcrypt version
         regex_libgcrypt = r"libgcrypt\s+(\d+\.\d+\.?\d*)"
@@ -1024,26 +1072,44 @@ class GpgKey(object):
 
         # sanity check
         if match_libgcrypt is None or match_libgcrypt.group(1) is None:
-            self.module.fail_json(msg="could not find a valid libgcrypt version number in string [{}]".format(lines[1]))
+            self.module.fail_json(
+                msg="could not find a valid libgcrypt version number in string [{}]".format(
+                    lines[1]
+                )
+            )
 
         # check versions
-        versions        =  {'gpg'       : match_gpg.group(1),
-                            'libgcrypt' : match_libgcrypt.group(1),
-                           }
-        req_gpg         = '2.1.17'
-        req_libgcrypt   = '1.8.1'
+        versions = {
+            "gpg": match_gpg.group(1),
+            "libgcrypt": match_libgcrypt.group(1),
+        }
+        req_gpg = "2.1.17"
+        req_libgcrypt = "1.8.1"
 
         # display minimum versions
-        self._vv("gpg_key module requires at least gnupg version [{}] and libgcrypt version [{}]".format(versions['gpg'], versions['libgcrypt']))
+        self._vv(
+            "gpg_key module requires at least gnupg version [{}] and libgcrypt version [{}]".format(
+                versions["gpg"], versions["libgcrypt"]
+            )
+        )
 
         # sanity check
-        if version.parse(versions['gpg']) < version.parse(req_gpg) or version.parse(versions['libgcrypt']) < version.parse(req_libgcrypt):
-            self.module.fail_json(msg="gpg version [{}] and libgcrypt version [{}] are required; [{}] and [{}] given".format(req_gpg, req_libgcrypt, versions['gpg'], versions['libgcrypt']))
+        if version.parse(versions["gpg"]) < version.parse(req_gpg) or version.parse(
+            versions["libgcrypt"]
+        ) < version.parse(req_libgcrypt):
+            self.module.fail_json(
+                msg="gpg version [{}] and libgcrypt version [{}] are required; [{}] and [{}] given".format(
+                    req_gpg, req_libgcrypt, versions["gpg"], versions["libgcrypt"]
+                )
+            )
         else:
-            self._vv("gnupg version [{}] and libgcrypt version [{}] detected".format(versions['gpg'], versions['libgcrypt']))
+            self._vv(
+                "gnupg version [{}] and libgcrypt version [{}] detected".format(
+                    versions["gpg"], versions["libgcrypt"]
+                )
+            )
 
         return True
-
 
     def check_installed_keys(self):
         """
@@ -1060,7 +1126,11 @@ class GpgKey(object):
         # get public key info
         pubkeyinfo = self.process_colons(stdout)
 
-        self._vv("found a total of [{}] public keys on target host".format(len(pubkeyinfo["fprs"])))
+        self._vv(
+            "found a total of [{}] public keys on target host".format(
+                len(pubkeyinfo["fprs"])
+            )
+        )
 
         self._vv("checking installed secret keys on target host")
 
@@ -1073,12 +1143,16 @@ class GpgKey(object):
         # get public key info
         seckeyinfo = self.process_colons(stdout)
 
-        self._vv("found a total of [{}] secret keys on target host".format(len(seckeyinfo["fprs"])))
+        self._vv(
+            "found a total of [{}] secret keys on target host".format(
+                len(seckeyinfo["fprs"])
+            )
+        )
 
         # merge keys
         keyinfo = {
-            'fprs': pubkeyinfo["fprs"]+seckeyinfo["fprs"],
-            'keys': pubkeyinfo["keys"]+seckeyinfo["keys"],
+            "fprs": pubkeyinfo["fprs"] + seckeyinfo["fprs"],
+            "keys": pubkeyinfo["keys"] + seckeyinfo["keys"],
         }
 
         # remove any duplicate fingerprints which may occur in both pub and sec keys
@@ -1087,19 +1161,23 @@ class GpgKey(object):
         # set keyinfo
         self.installed_keys = keyinfo
 
-
     def check_homedir(self):
         """
         check homedir
         """
         # check if homedir exists, if not, fail
-        if self.module.params["homedir"] and not os.path.isdir(self.module.params["homedir"]):
-            self.module.fail_json(msg="given homedir [{}] does not exist or not accessible by current ansible user".format(self.module.params["homedir"]))
+        if self.module.params["homedir"] and not os.path.isdir(
+            self.module.params["homedir"]
+        ):
+            self.module.fail_json(
+                msg="given homedir [{}] does not exist or not accessible by current ansible user".format(
+                    self.module.params["homedir"]
+                )
+            )
 
         self._vv("homedir set to [{}]".format(self.module.params["homedir"]))
 
         return True
-
 
     def check_file(self):
         """
@@ -1111,9 +1189,15 @@ class GpgKey(object):
 
         # sanity check
         if not os.path.isfile(self.module.params["file"]):
-            self.module.fail_json(msg="the keyfile [{}] does not exist on the target machine".format(self.module.params["file"]))
+            self.module.fail_json(
+                msg="the keyfile [{}] does not exist on the target machine".format(
+                    self.module.params["file"]
+                )
+            )
         else:
-            self._vv("keyfile [{}] exists on target host".format(self.module.params["file"]))
+            self._vv(
+                "keyfile [{}] exists on target host".format(self.module.params["file"])
+            )
 
         # get key info from file
         cmd = self.prepare_command("check", "file")
@@ -1123,7 +1207,6 @@ class GpgKey(object):
         keyinfo = self.process_colons(stdout)
 
         return keyinfo
-
 
     def process_colons(self, cinfo):
         """
@@ -1142,7 +1225,7 @@ class GpgKey(object):
         # line types
         #
         # *** Field 1 - Type of record
-        # 
+        #
         #     - pub :: Public key
         #     - crt :: X.509 certificate
         #     - crs :: X.509 certificate and private key available
@@ -1162,21 +1245,21 @@ class GpgKey(object):
         #     - tru :: Trust database information [*]
         #     - spk :: Signature subpacket [*]
         #     - cfg :: Configuration data [*]
-        # 
+        #
         #     Records marked with an asterisk are described at [[*Special%20field%20formats][*Special fields]].
         #
 
         #
         # *** Field 12 - Key capabilities
-        # 
+        #
         #     The defined capabilities are:
-        # 
+        #
         #     - e :: Encrypt
         #     - s :: Sign
         #     - c :: Certify
         #     - a :: Authentication
         #     - ? :: Unknown capability
-        # 
+        #
         #     A key may have any combination of them in any order.  In addition
         #     to these letters, the primary key has uppercase versions of the
         #     letters to denote the _usable_ capabilities of the entire key, and
@@ -1210,34 +1293,34 @@ class GpgKey(object):
         #
 
         # determine the correct line
-        main_lines = ['sec','ssb','pub','sub']
-        follow_lines = ['fpr','grp','uid']
+        main_lines = ["sec", "ssb", "pub", "sub"]
+        follow_lines = ["fpr", "grp", "uid"]
 
         # indexes start at 0
         # main parts are for main_lines only
         mainparts = {
-            'type'              : 0,
-            'trust_level'       : 1,
-            'key_length'        : 2,
-            'pubkey_algorithm'  : 3,
-            'keyid'             : 4,
-            'creationdate'      : 5,
-            'expirationdate'    : 6,
-            'key_capabilities'  : 11,
-            'hash_algorithm'    : 15,
-            'curve_name'        : 16,
+            "type": 0,
+            "trust_level": 1,
+            "key_length": 2,
+            "pubkey_algorithm": 3,
+            "keyid": 4,
+            "creationdate": 5,
+            "expirationdate": 6,
+            "key_capabilities": 11,
+            "hash_algorithm": 15,
+            "curve_name": 16,
         }
 
         # indexes start at 0
         # follow parts for follow_lines only
         followparts = {
-            'type'              : 0,
-            'userid'            : 9, # this is the fingerprint for fpr records and the keygrip for grp records
+            "type": 0,
+            "userid": 9,  # this is the fingerprint for fpr records and the keygrip for grp records
         }
 
         #
         # 9.1.  Public-Key Algorithms
-        # 
+        #
         #       ID           Algorithm
         #       --           ---------
         #       1          - RSA (Encrypt or Sign) [HAC]
@@ -1254,45 +1337,45 @@ class GpgKey(object):
         #       100 to 110 - Private/Experimental algorithm
         #
         pubkeys = {
-            '1'                 : 'RSA (Encrypt or Sign)',
-            '2'                 : 'RSA Encrypt-Only',
-            '3'                 : 'RSA Sign-Only',
-            '16'                : 'Elgamal (Encrypt-Only)',
-            '17'                : 'DSA [FIPS186]',
-            '18'                : 'Cv25519',
-            '22'                : 'Ed25519',
+            "1": "RSA (Encrypt or Sign)",
+            "2": "RSA Encrypt-Only",
+            "3": "RSA Sign-Only",
+            "16": "Elgamal (Encrypt-Only)",
+            "17": "DSA [FIPS186]",
+            "18": "Cv25519",
+            "22": "Ed25519",
         }
 
         #
         # 2. Field:  A letter describing the calculated trust. This is a single
-	    # letter, but be prepared that additional information may follow
-	    # in some future versions. (not used for secret keys)
+        # letter, but be prepared that additional information may follow
+        # in some future versions. (not used for secret keys)
         #
-		# o = Unknown (this key is new to the system)
+        # o = Unknown (this key is new to the system)
         # i = The key is invalid (e.g. due to a missing self-signature)
-		# d = The key has been disabled
-		# r = The key has been revoked
-		# e = The key has expired
-		# - = Unknown trust (i.e. no value assigned)
-		# q = Undefined trust; '-' and 'q' may safely be treated as the same value for most purposes
-		# n = Don't trust this key at all
-		# m = There is marginal trust in this key
-		# f = The key is full trusted.
-		# u = The key is ultimately trusted; this is only used for
-		#     keys for which the secret key is also available.
+        # d = The key has been disabled
+        # r = The key has been revoked
+        # e = The key has expired
+        # - = Unknown trust (i.e. no value assigned)
+        # q = Undefined trust; '-' and 'q' may safely be treated as the same value for most purposes
+        # n = Don't trust this key at all
+        # m = There is marginal trust in this key
+        # f = The key is full trusted.
+        # u = The key is ultimately trusted; this is only used for
+        #     keys for which the secret key is also available.
         #
         trustlevels = {
-            'o'                 : 'Unknown/new',
-            'i'                 : 'The key is invalid',
-            'd'                 : 'The key has been disabled',
-            'r'                 : 'The key has been revoked',
-            'e'                 : 'The key has expired',
-            '-'                 : 'Unknown trust',
-            'q'                 : 'Undefined trust',
-            'n'                 : 'Dont trust this key at all',
-            'm'                 : 'There is marginal trust in this key',
-            'f'                 : 'The key is fully trusted',
-            'u'                 : 'The key is ultimately trusted',
+            "o": "Unknown/new",
+            "i": "The key is invalid",
+            "d": "The key has been disabled",
+            "r": "The key has been revoked",
+            "e": "The key has expired",
+            "-": "Unknown trust",
+            "q": "Undefined trust",
+            "n": "Dont trust this key at all",
+            "m": "There is marginal trust in this key",
+            "f": "The key is fully trusted",
+            "u": "The key is ultimately trusted",
         }
 
         # set list of keys and list of fingerprints
@@ -1309,48 +1392,52 @@ class GpgKey(object):
             pieces = l.split(":")
 
             # get current line type
-            curType = pieces[mainparts.get('type')]
+            curType = pieces[mainparts.get("type")]
 
             # check for usage/capabilities
             if curType in main_lines:
 
                 # check if curKey has values; if so add them to keys list first
                 if "type" in curKey:
-                    self._vv("found [{}] key with fingerprint [{}]".format(curKey["type"], curKey["fingerprint"]))
+                    self._vv(
+                        "found [{}] key with fingerprint [{}]".format(
+                            curKey["type"], curKey["fingerprint"]
+                        )
+                    )
                     keys.append(curKey)
 
                 # get pubkey algorithm
-                p = pieces[mainparts.get('pubkey_algorithm')]
-                z = pubkeys.get(p) if p is not None else ''
+                p = pieces[mainparts.get("pubkey_algorithm")]
+                z = pubkeys.get(p) if p is not None else ""
 
                 # get trustlevel description
-                p = pieces[mainparts.get('trust_level')]
-                t = trustlevels.get(p) if p is not None else ''
+                p = pieces[mainparts.get("trust_level")]
+                t = trustlevels.get(p) if p is not None else ""
 
                 curKey = {
-                    'type': pieces[mainparts.get('type')],
-                    'trust_level': pieces[mainparts.get('trust_level')],
-                    'trust_level_desc': t,
-                    'key_length': pieces[mainparts.get('key_length')],
-                    'pubkey_algorithm': z,
-                    'keyid': pieces[mainparts.get('keyid')],
-                    'creationdate': pieces[mainparts.get('creationdate')],
-                    'expirationdate': pieces[mainparts.get('expirationdate')],
-                    'key_capabilities': pieces[mainparts.get('key_capabilities')],
-                    'hash_algorithm': pieces[mainparts.get('hash_algorithm')],
-                    'curve_name': pieces[mainparts.get('curve_name')],
+                    "type": pieces[mainparts.get("type")],
+                    "trust_level": pieces[mainparts.get("trust_level")],
+                    "trust_level_desc": t,
+                    "key_length": pieces[mainparts.get("key_length")],
+                    "pubkey_algorithm": z,
+                    "keyid": pieces[mainparts.get("keyid")],
+                    "creationdate": pieces[mainparts.get("creationdate")],
+                    "expirationdate": pieces[mainparts.get("expirationdate")],
+                    "key_capabilities": pieces[mainparts.get("key_capabilities")],
+                    "hash_algorithm": pieces[mainparts.get("hash_algorithm")],
+                    "curve_name": pieces[mainparts.get("curve_name")],
                 }
 
             elif curType in follow_lines:
 
                 # check follow line type
                 if curType == "fpr":
-                    curKey["fingerprint"] = pieces[followparts.get('userid')]
+                    curKey["fingerprint"] = pieces[followparts.get("userid")]
                     fprs.append(curKey["fingerprint"])
                 elif curType == "grp":
-                    curKey["keygrip"] = pieces[followparts.get('userid')]
+                    curKey["keygrip"] = pieces[followparts.get("userid")]
                 elif curType == "uid":
-                    curKey["userid"] = pieces[followparts.get('userid')]
+                    curKey["userid"] = pieces[followparts.get("userid")]
 
             # if we make it here we have encountered an unknown linetype
             # we should add the key info we have gathered so far to the keylist
@@ -1358,23 +1445,30 @@ class GpgKey(object):
             # keys will follow in the next lines
             else:
                 if "type" in curKey:
-                    self._vv("found [{}] key with fingerprint [{}]".format(curKey["type"], curKey["fingerprint"]))
+                    self._vv(
+                        "found [{}] key with fingerprint [{}]".format(
+                            curKey["type"], curKey["fingerprint"]
+                        )
+                    )
                     keys.append(curKey)
                     curKey = {}
 
         # after the last line, see if any keys remain which need to be added
         if "type" in curKey:
-            self._vv("found [{}] key with fingerprint [{}]".format(curKey["type"], curKey["fingerprint"]))
+            self._vv(
+                "found [{}] key with fingerprint [{}]".format(
+                    curKey["type"], curKey["fingerprint"]
+                )
+            )
             keys.append(curKey)
 
         #
         # set and return results
         #
         return {
-            'keys': keys,
-            'fprs': fprs,
+            "keys": keys,
+            "fprs": fprs,
         }
-
 
     def compare_trust(self, trust1, trust2):
         """
@@ -1400,17 +1494,17 @@ class GpgKey(object):
         # 'u' : 'The key is ultimately trusted',
         #
         trust_map = {
-            'o' : "0",
-            'i' : "0",
-            'd' : "0",
-            'r' : "0",
-            'e' : "0",
-            '-' : "1",
-            'q' : "1",
-            'n' : "2",
-            'm' : "3",
-            'f' : "4",
-            'u' : "5",
+            "o": "0",
+            "i": "0",
+            "d": "0",
+            "r": "0",
+            "e": "0",
+            "-": "1",
+            "q": "1",
+            "n": "2",
+            "m": "3",
+            "f": "4",
+            "u": "5",
         }
 
         # convert trust if necessary
@@ -1424,30 +1518,28 @@ class GpgKey(object):
         # compare trust
         return trust1 == trust2
 
-
     def get_trust(self, trust):
         """
         method to get trust indicator from value
         """
         gpg_map = {
-            '1' : '-',
-            '2' : 'n',
-            '3' : 'm',
-            '4' : 'f',
-            '5' : 'u',
+            "1": "-",
+            "2": "n",
+            "3": "m",
+            "4": "f",
+            "5": "u",
         }
 
         trust_map = {
-            '-' : 'Unknown trust',
-            'n' : 'Dont trust this key at all',
-            'm' : 'There is marginal trust in this key',
-            'f' : 'The key is fully trusted',
-            'u' : 'The key is ultimately trusted',
+            "-": "Unknown trust",
+            "n": "Dont trust this key at all",
+            "m": "There is marginal trust in this key",
+            "f": "The key is fully trusted",
+            "u": "The key is ultimately trusted",
         }
 
         # return trust value
         return gpg_map[trust], trust_map[gpg_map[trust]]
-
 
     def set_trust(self, fingerprint, trust):
         """
@@ -1473,12 +1565,12 @@ class GpgKey(object):
 
         # trust map
         trust_map = {
-            '1' : '2',
-            '2' : '3',
-            '3' : '4',
-            '4' : '5',
-            '5' : '6',
-        }        
+            "1": "2",
+            "2": "3",
+            "3": "4",
+            "4": "5",
+            "5": "6",
+        }
 
         # create temporary owner trust file
         # the newline at the end is required to prevent a 'gpg: line too long' error
@@ -1498,7 +1590,6 @@ class GpgKey(object):
         # return
         return True
 
-
     def set_keyinfo(self, keyinfo):
         """
         sets the keyinfo in an easy to process format
@@ -1517,27 +1608,29 @@ def main():
 
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
-        fpr=dict(type='str', required=False),
-        keyserver=dict(type='str', default='keyserver.ubuntu.com'),
-        file=dict(type='path', required=False),
-        content=dict(type='str', required=False),
-        trust=dict(type='str', default='1', choices=['1','2','3','4','5']),
-        manage_trust=dict(type='bool', default=True),
-        state=dict(type='str', default='present', choices=['info', 'present', 'absent', 'latest']),
-        gpgbin=dict(type='path', default=None),
-        homedir=dict(type='path', default=None),
-        keyring=dict(type='path', default=None),
+        fpr=dict(type="str", required=False),
+        keyserver=dict(type="str", default="keyserver.ubuntu.com"),
+        file=dict(type="path", required=False),
+        content=dict(type="str", required=False),
+        trust=dict(type="str", default="1", choices=["1", "2", "3", "4", "5"]),
+        manage_trust=dict(type="bool", default=True),
+        state=dict(
+            type="str",
+            default="present",
+            choices=["info", "present", "absent", "latest"],
+        ),
+        gpgbin=dict(type="path", default=None),
+        homedir=dict(type="path", default=None),
+        keyring=dict(type="path", default=None),
     )
 
     # set mutually exclusive params
     mutually_exclusive = [
-        ['fpr', 'file', 'content'],
+        ["fpr", "file", "content"],
     ]
 
     # set at least one required field
-    required_one_of = [
-        ['fpr', 'file', 'content']
-    ]
+    required_one_of = [["fpr", "file", "content"]]
 
     # the AnsibleModule object will be our abstraction working with Ansible
     # this includes instantiation, a couple of common attr would be the
@@ -1547,7 +1640,7 @@ def main():
         argument_spec=module_args,
         mutually_exclusive=mutually_exclusive,
         required_one_of=required_one_of,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     # run module
@@ -1558,7 +1651,6 @@ def main():
     # simple AnsibleModule.exit_json(), passing the key/value results
     module.exit_json(**result)
 
-
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
     # state with no modifications
@@ -1567,6 +1659,7 @@ def main():
 
     # module.get_bin_path / def get_bin_path
     # module.run_command / def run_command
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()

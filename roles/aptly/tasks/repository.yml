@@ -3,16 +3,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
+# - name: repository | Create repositories
+#   ansible.builtin.uri:
+#     url: "http://{{ aptly_listen }}/api/repos"
+#     method: POST
+#     body_format: json
+#     status_code: [200, 201]
+#     headers:
+#       Content-Type: application/json
+#     body: >
+#       {
+#         "Name": "{{ item.name }}",
+#         "Comment": "{{ item.comment }}",
+#         "DefaultDistribution": "{{ item.distribution }}",
+#         "DefaultComponent": "{{ item.component | default('main') }}"
+#       }
+#   with_items: "{{ aptly_repositories }}"
+
 - name: repository | Create repositories
-  ansible.builtin.uri:
-    url: "http://{{ aptly_listen }}/api/repos"
-    method: POST
-    body_format: json
-    body: |
-      {
-        "Name": "{{ item.name | default('') | to_nice_json }}",
-        "Comment": "{{ item.comment | default('') | to_nice_json }}",
-        "DefaultDistribution": "{{ item.distribution | default('') | to_nice_json }}",
-        "DefaultComponent": "{{ item.component | default('main') | to_nice_json }}"
-      }
+  weytop.infrastructure.aptly_repository:
+    endpoint: "http://{{ aptly_listen }}"
+    name: "{{ item.name }}"
+    comment: "{{ item.comment }}"
+    distribution: "{{ item.distribution }}"
+    component: "{{ item.component | default('main') }}"
   with_items: "{{ aptly_repositories }}"

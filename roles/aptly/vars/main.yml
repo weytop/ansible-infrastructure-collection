@@ -6,6 +6,7 @@
 aptly_template_source: aptly.conf.j2
 aptly_install_packages:
   - aptly
+  - python3-aptly-api-client
   - gnupg2
   - inoticoming
   - curl

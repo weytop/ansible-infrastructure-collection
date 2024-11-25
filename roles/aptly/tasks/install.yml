@@ -91,7 +91,7 @@
 
 - name: install | Wait API to be available
   ansible.builtin.uri:
-    url: "http://{{ aptly_listen }}/api/ready"
+    url: "http://{{ aptly_listen }}/api/version"
     method: GET
   register: _result
   until: _result.status == 200

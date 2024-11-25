@@ -62,3 +62,17 @@ aptly_repositories: []
   # - name: app_stable
   #   comment: App Stable builds
   #   distribution: noble
+
+# List of mirrors to create
+aptly_mirrors: []
+#  - name: proxmox-bullseye
+#    archive_url: "http://download.proxmox.com/debian/pve"
+#    distribution: bullseye
+#    components: ["pve-no-subscription"]
+#    architectures: ["amd64"]
+  
+# Url of key to download to truststore for mirrors
+aptly_mirrors_keys_urls: []
+#  - name: proxmox.gpg # Add gpg extension if key is dearmored key or asc if armored
+#    url: http://download.proxmox.com/debian/proxmox-release-bullseye.gpg
+#    state: present # present or absent

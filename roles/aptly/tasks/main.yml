@@ -5,11 +5,19 @@
 ---
 - name: Import install tasks
   ansible.builtin.import_tasks: install.yml
+  tags: aptly_install
 
 - name: Import gpg tasks
   ansible.builtin.import_tasks: gpg.yml
   when: aptly_gpg_private_key and aptly_gpg_public_key and aptly_gpg_fpr
+  tags: aptly_gpg
 
 - name: Import repository tasks
   ansible.builtin.import_tasks: repository.yml
   when: aptly_repositories | default([]) | length > 0
+  tags: aptly_repository
+
+- name: Import mirror tasks
+  ansible.builtin.import_tasks: mirror.yml
+  when: aptly_repositories | default([]) | length > 0
+  tags: aptly_mirror
