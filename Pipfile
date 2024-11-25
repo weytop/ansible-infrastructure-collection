@@ -4,20 +4,19 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ansible = "*"
 voluptuous = "*"
 pyyaml = "*"
 pathspec = "*"
 packaging = "*"
 jmespath = "*"
 aptly-api-client = ">=0.3.0"
+ansible = "*"
 
 [dev-packages]
 reuse = "*"
 ansible-lint = "*"
 yamllint = "*"
 black = "*"
-epdb = "*"
 
 [requires]
 python_version = "3.12"
