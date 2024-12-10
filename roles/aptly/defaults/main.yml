@@ -13,6 +13,9 @@ aptly_home: /var/lib/aptly
 # Aptly api listen address
 aptly_listen: 127.0.0.1:8000
 
+# Aptly incoming directory
+aptly_incoming_dir: /srv/incoming
+
 # Aptly configuration template file as yaml dictionary and convert to nice json format
 # See https://www.aptly.info/doc/configuration/ for configuration options
 aptly_json_config:

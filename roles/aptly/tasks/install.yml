@@ -83,6 +83,17 @@
     group: "{{ aptly_group }}"
     mode: "0755"
 
+- name: install | Add gpg key to file system publish directories
+  when: aptly_json_config.FileSystemPublishEndpoints is defined and aptly_json_config.FileSystemPublishEndpoints | length > 0
+    and aptly_gpg_public_key is defined and aptly_gpg_public_key | length > 0
+  with_items: "{{ aptly_json_config.FileSystemPublishEndpoints | json_query('*.rootDir') }}"
+  ansible.builtin.copy:
+    dest: "{{ item }}/gpg.asc"
+    content: "{{ aptly_gpg_public_key }}"
+    owner: "{{ aptly_user }}"
+    group: "{{ aptly_group }}"
+    mode: "0644"
+
 - name: install | Ensure aptly service is running and enabled
   ansible.builtin.systemd:
     name: aptly

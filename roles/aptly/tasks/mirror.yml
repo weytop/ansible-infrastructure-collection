@@ -12,7 +12,7 @@
         mode: "0644"
       when: item.state is not defined or item.state == 'present'
       with_items: "{{ aptly_mirrors_keys_urls }}"
-      
+
     - name: mirror | Remove public keys
       ansible.builtin.file:
         path: "/etc/apt/keyrings/{{ item.name }}"
