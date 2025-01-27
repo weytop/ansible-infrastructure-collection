@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2024 Weytop
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[tool.poetry]
+name = "infrastructure"
+description = "Weytop Ansible Collection for Infrastructure Services"
+authors = ["ThysTips <athys@weytop.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+ansible = ">=11.1.0"
+pyyaml = ">=6.0.2"
+voluptuous = "*"
+pathspec = "*"
+jmespath = "*"
+packaging = "*"
+cryptography = ">=43.0.1"
+aptly-api-client = ">=0.3.0"
+
+[tool.poetry.group.dev.dependencies]
+reuse = ">=5.0.2"
+ansible-lint = ">=25.1.0"
+yamllint = ">=1.35.1"
+black = ">=24.10.0"
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"

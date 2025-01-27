@@ -15,7 +15,13 @@ SPDX-FileCopyrightText = "2024 Weytop"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = "Pipfile*"
+path = "poetry.*"
+precedence = "override"
+SPDX-FileCopyrightText = "2024 Weytop"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "pyproject.toml"
 precedence = "override"
 SPDX-FileCopyrightText = "2024 Weytop"
 SPDX-License-Identifier = "CC0-1.0"

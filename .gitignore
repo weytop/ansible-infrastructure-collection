@@ -16,3 +16,4 @@ weytop-infrastructure-*.tar.gz
 tests/output
 dist/
 .idea/
+requirements.txt

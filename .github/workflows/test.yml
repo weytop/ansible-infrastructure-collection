@@ -1,10 +1,7 @@
 # SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
 # SPDX-FileCopyrightText: 2024 Weytop
-# SPDX-FileContributor: ThysTips <contact@thystips.net>
 #
 # SPDX-License-Identifier: CC0-1.0
-# SPDX-License-Identifier: GPL-3.0-or-later
-
 name: CI
 
 on:
@@ -15,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: 3.12
+  PYTHON_VERSION: 3.13
 
 defaults:
   run:
@@ -32,7 +29,7 @@ jobs:
 
       - id: compliance
         name: REUSE Compliance Check
-        uses: fsfe/reuse-action@v4
+        uses: fsfe/reuse-action@v5
 
   lint:
     runs-on: self-hosted
@@ -43,30 +40,32 @@ jobs:
         with:
           path: ./ansible_collections/weytop/infrastructure
 
+      - name: Install poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "/root/.local/bin" >> $GITHUB_PATH
+
       - id: setup-python
         name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pipenv'
+          cache: 'poetry'
 
-      - id: pipenv
-        name: Install pipenv
-        run: |
-          python3 -m pip install pipenv --upgrade
-          pipenv sync --dev --python ${{ env.PYTHON_VERSION }}
+      - name: Install the project dependencies
+        run: poetry install --with=dev
 
       # - id: ansible-sanity
       #   name: Test Ansible Collection Sanity
       #   env:
       #     HOME: /root
-      #   run: pipenv run ansible-test sanity
+      #   run: poetry run ansible-test sanity
 
       - id: ansible-lint
         name: Lint Ansible Collection
         env:
           HOME: /root
-        run: pipenv run ansible-lint
+        run: poetry run ansible-lint
 
   build:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -78,18 +77,20 @@ jobs:
         with:
           path: ./ansible_collections/weytop/infrastructure
 
+      - name: Install poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "/root/.local/bin" >> $GITHUB_PATH
+
       - id: setup-python
         name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pipenv'
+          cache: 'poetry'
 
-      - id: pipenv
-        name: Install pipenv
-        run: |
-          python3 -m pip install pipenv --upgrade
-          pipenv sync --dev --python ${{ env.PYTHON_VERSION }}
+      - name: Install the project dependencies
+        run: poetry install --without=dev
 
       - id: dist-clean
         name: Clean dist directory
@@ -99,4 +100,6 @@ jobs:
         name: Build Ansible Collection
         env:
           HOME: /root
-        run: pipenv run ansible-galaxy collection build --force
+        run: |
+          poetry export -f requirements.txt --output requirements.txt
+          poetry run ansible-galaxy collection build --force

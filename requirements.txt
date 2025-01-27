@@ -1,8 +1,0 @@
--i https://pypi.org/simple
-ansible==11.0.0; python_version >= '3.11'
-aptly-api-client==0.3.0
-jmespath==1.0.1; python_version >= '3.7'
-packaging==24.2; python_version >= '3.8'
-pathspec==0.12.1; python_version >= '3.8'
-pyyaml==6.0.2; python_version >= '3.8'
-voluptuous==0.15.2; python_version >= '3.9'

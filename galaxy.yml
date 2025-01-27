@@ -37,8 +37,9 @@ issues: https://github.com/weytop/ansible-infrastructure-collection/issues
 build_ignore:
   - .gitignore
   - .github
-  - Pipfile
-  - Pipfile.lock
+  - pyproject.toml
+  - poetry.lock
+  - poetry.toml
   - .vscode
   - .idea
 
