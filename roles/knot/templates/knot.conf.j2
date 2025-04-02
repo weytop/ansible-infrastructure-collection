@@ -14,10 +14,10 @@ database:
 key:
   - id: tsig
     algorithm: hmac-sha256
-    secret: {{ knot_tsig_key_secret_encoded }}
+    secret: {{ knot_tsig_key_secret }}
   - id: admin
     algorithm: hmac-sha256
-    secret: {{ knot_admin_key_secret_encoded }}
+    secret: {{ knot_admin_key_secret }}
 
 remote:
 {% for remote in groups['dns'] if remote != inventory_hostname %}

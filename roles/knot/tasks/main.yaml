@@ -32,8 +32,8 @@
 
 - name: Set Knot TSIG Key fact
   ansible.builtin.set_fact:
-    knot_tsig_key_secret_encoded: "{{ knot_tsig_key_secret | b64encode }}"
-    knot_admin_key_secret_encoded: "{{ knot_admin_key_secret | b64encode }}"
+    knot_tsig_key_secret: "{{ knot_tsig_key_secret }}"
+    knot_admin_key_secret: "{{ knot_admin_key_secret }}"
   delegate_to: localhost
   run_once: true
 
