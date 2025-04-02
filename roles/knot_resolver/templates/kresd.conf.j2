@@ -1,0 +1,79 @@
+-- SPDX-FileCopyrightText: 2025 ThysTips <contact@thystips.net>
+-- SPDX-FileCopyrightText: 2025 Weytop
+-- SPDX-License-Identifier: GPL-3.0-or-later
+-- vim:syntax=lua:set ts=4 sw=4:
+-- Refer to manual: https://knot-resolver.readthedocs.org/en/stable/
+
+-- Network interface configuration
+{% for listen in knot_resolver_listens %}
+net.listen( '{{ listen.listen }}', '{{ listen.port }}', { kind = '{{ listen.kind }}' })
+{% endfor %}
+net.listen('127.0.0.1')
+
+net.ipv4 = true
+net.outgoing_v4 = true
+net.ipv6 = false
+net.outgoing_v6 = false
+
+-- Load useful modules
+modules = {
+    'hints > iterate',  -- Allow loading /etc/hosts or custom root hints
+    'stats',            -- Track internal statistics
+    'predict',          -- Prefetch expiring/frequent records
+    'policy',           -- Policy module
+    'view',             -- Allow multiple views
+    'http',             -- HTTP server
+    'daf',              -- DNS Application Firewall
+    'prefill',          -- Prefill cache
+}
+
+-- Cache size
+cache.size = 1000 * MB
+
+-- Cache configuration
+prefill.config({
+    ['.'] = {
+        url = 'https://www.internic.net/domain/root.zone',
+        interval = 86400, -- seconds
+    }
+})
+
+-- whitelist queries identified by subnets
+view:addr('127.0.0.0/8', policy.all(policy.PASS))
+{% for subnet in knot_resolver_whitelist_subnets %}
+view:addr('{{ subnet }}', policy.all(policy.PASS))
+{% endfor %}
+
+-- drop everything that has not matched
+view:addr('0.0.0.0/0', policy.all(policy.DROP))
+
+-- internal domains policy
+{% if knot_resolver_internal_domains is defined and knot_resolver_internal_domains | length > 0  %}
+internalDomains = policy.todnames({
+    {% for domain in knot_resolver_internal_domains %}
+    '{{ domain }}',
+    {% endfor %}
+})
+
+-- private auth servers policy
+{% if knot_resolver_private_auth_servers is defined and knot_resolver_private_auth_servers | length > 0  %}
+policy.add(policy.suffix(policy.FLAGS({'NO_CACHE'}), internalDomains))
+policy.add(policy.suffix(policy.STUB({
+{% for server in knot_resolver_private_auth_servers %}
+    '{{ server.address }}@{{ server.port }}',
+{% endfor %}
+}), internalDomains))
+{% endif %}
+{% endif %}
+
+-- public solvers policy
+{% if knot_resolver_public_solvers_servers is defined and knot_resolver_public_solvers_servers | length >0 %}
+policy.add(policy.all(policy.TLS_FORWARD({
+{% for server in knot_resolver_public_solvers_servers %}
+    {'{{ server.ip }}', hostname='{{ server.hostname }}'},
+{% endfor %}
+})))
+{% endif %}
+
+-- daf policy
+daf.add('src = 127.0.0.0/8 reroute {{ ansible_host }}-127.0.0.1')

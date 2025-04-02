@@ -1,0 +1,116 @@
+server:
+    rundir: "/run/knot"
+    user: knot:knot
+    automatic-acl: on
+    listen: {{ knot_listen | to_yaml }}
+
+log:
+  - target: syslog
+    any: info
+
+database:
+    storage: "/var/lib/knot"
+
+key:
+  - id: tsig
+    algorithm: hmac-sha256
+    secret: {{ knot_tsig_key_secret_encoded }}
+  - id: admin
+    algorithm: hmac-sha256
+    secret: {{ knot_admin_key_secret_encoded }}
+
+remote:
+{% for remote in groups['dns'] if remote != inventory_hostname %}
+  - id: {{ remote }}
+    address: {{ hostvars[remote]['knot_transfert_address'] }}
+    key: tsig
+{% endfor %}
+  - id: remote-google
+    address: 8.8.8.8
+    address: 8.8.4.4
+
+acl:
+  - id: local_xfr
+    address: [::1, 127.0.0.1]
+    action: transfer
+  - id: transfert
+    action: [notify, transfer, update]
+    key: tsig
+  - id: admin
+    address: [10.0.3.128/27, 10.0.3.160/28]
+    action: [notify, transfer, update]
+    key: admin
+
+submission:
+  - id: submission-default
+    check-interval: 1h
+    parent: remote-google
+
+policy:
+  - id: submission
+    signing-threads: 4
+    algorithm: ecdsap384sha384
+    cds-cdnskey-publish: rollover
+    ksk-lifetime: 365d
+    zsk-lifetime: 60d
+    propagation-delay: 1h
+    ksk-submission: submission-default
+    ksk-shared: on
+  - id: dnssec
+    signing-threads: 4
+    algorithm: ecdsap384sha384
+    cds-cdnskey-publish: rollover
+    ksk-lifetime: 365d
+    zsk-lifetime: 60d
+    propagation-delay: 1h
+    ksk-shared: on
+
+template:
+  - id: default
+    storage: "/var/lib/knot"
+    file: "%s.zone"
+    acl: [local_xfr, transfert, admin]
+{% if inventory_hostname == groups['dns'][0] %}
+    zonefile-load: difference
+{% for remote in groups['dns'] if remote != groups['dns'][0] %}
+    notify: {{ remote }}
+{% endfor %}
+{% else %}
+    master: {{ groups['dns'][0] }}
+{% endif %}
+  - id: submission
+    storage: "/var/lib/knot"
+    file: "%s.zone.signed"
+    acl: [local_xfr, transfert, admin]
+{% if inventory_hostname == groups['dns'][0] %}
+    dnssec-signing: on
+    dnssec-policy: submission
+    semantic-checks: on
+    zonefile-load: difference
+{% for remote in groups['dns'] if remote != groups['dns'][0] %}
+    notify: {{ remote }}
+{% endfor %}
+{% else %}
+    master: {{ groups['dns'][0] }}
+{% endif %}
+  - id: signed
+    storage: "/var/lib/knot"
+    file: "%s.zone.signed"
+    acl: [local_xfr, transfert, admin]
+{% if inventory_hostname == groups['dns'][0] %}
+    dnssec-signing: on
+    dnssec-policy: dnssec
+    semantic-checks: on
+    zonefile-load: difference
+{% for remote in groups['dns'] if remote != groups['dns'][0] %}
+    notify: {{ remote }}
+{% endfor %}
+{% else %}
+    master: {{ groups['dns'][0] }}
+{% endif %}
+
+zone:
+{% for zone in knot_zones %}
+  - domain: {{ zone.domain }}
+    template: {{ zone.template }}
+{% endfor %}

@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+galaxy_info:
+  author: Antoine Thys
+  description: Install and configure Knot Resolver
+  company: Weytop
+
+  license: GPL-3.0-or-later
+
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+
+  galaxy_tags:
+    - dns
+    - knot
+    - knotresolver
+    - linux
+
+dependencies: []

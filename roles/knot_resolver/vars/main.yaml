@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+knot_resolver_gpg_key_url: https://pkg.labs.nic.cz/gpg
+knot_resolver_gpg_key: /usr/share/keyrings/cznic-labs-pkg.gpg
+knot_resolver_repo: "deb [signed-by={{ knot_resolver_gpg_key }}] https://pkg.labs.nic.cz/knot-resolver {{ ansible_distribution_release }} main"

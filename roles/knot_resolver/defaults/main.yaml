@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+knot_resolver_listens:
+  - listen: "{{ ansible_host }}"
+    port: 53
+    kind: dns
+  # - listen: "{{ ansible_host }}"
+  #   port: 853
+  #   kind: dns-tls
+
+knot_resolver_whitelist_subnets:
+  - "10.0.0.0/8"
+
+knot_resolver_internal_domains:
+  - "weytop.net"
+  - "weytop.local"
+
+knot_resolver_private_auth_servers:
+  - name: "dns1"
+    address: "{{ hostvars['dns1']['ansible_host'] }}"
+    port: 5353
+  - name: "dns2"
+    address: "{{ hostvars['dns2']['ansible_host'] }}"
+    port: 5353
+
+knot_resolver_public_solvers_servers:
+  - ip: 1.1.1.1
+    hostname: "cloudflare-dns.com"
+  - ip: 1.0.0.1
+    hostname: "cloudflare-dns.com"
+  - ip: 8.8.8.8
+    hostname: "dns.google"
+  - ip: 8.8.4.4
+    hostname: "dns.google"

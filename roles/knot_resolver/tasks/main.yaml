@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+- name: Add Knot Resolver repository
+  block:
+    - name: Get Knot Resolver Key
+      ansible.builtin.get_url:
+        url: "{{ knot_resolver_gpg_key_url }}"
+        dest: "{{ knot_resolver_gpg_key }}"
+        mode: "0644"
+        owner: root
+        group: root
+    - name: Add Knot Resolver repository
+      ansible.builtin.apt_repository:
+        repo: "{{ knot_resolver_repo }}"
+        state: present
+        filename: knot-resolver
+        update_cache: true
+
+- name: Install Knot Resolver Package and utils
+  ansible.builtin.apt:
+    name:
+      - ldnsutils
+      - knot-resolver
+      - knot-resolver-module-http
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure Knot Resolver
+  ansible.builtin.template:
+    src: kresd.conf.j2
+    dest: /etc/knot-resolver/kresd.conf
+    mode: "0644"
+    owner: root
+    group: root
+  notify:
+    - Restart Knot Resolver
+
+- name: Enable Knot Resolver Service
+  ansible.builtin.systemd:
+    name: kresd@1.service
+    enabled: true
+    masked: false
+    state: started

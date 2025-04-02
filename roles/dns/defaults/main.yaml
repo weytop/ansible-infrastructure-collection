@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2024 ThysTips <contact@thystips.net>
+# SPDX-FileCopyrightText: 2024 Weytop
+# SPDX-FileContributor: ThysTips <contact@thystips.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+dns_nameservers:
+  - 10.0.3.49
+  - 10.0.3.50
+
+dns_domain: weytop.net
+dns_search:
+  - weytop.net
+  - weytop.local
