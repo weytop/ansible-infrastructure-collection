@@ -1,3 +1,11 @@
+# 2.1.0 - 2025-04-02
+
+## New Features
+- Add roles for DNS architecture
+
+## Chores
+- update CHANGELOG.md for 2.0.0 [skip ci]
+
 # 2.0.0 - 2025-01-27
 
 ## New Features
