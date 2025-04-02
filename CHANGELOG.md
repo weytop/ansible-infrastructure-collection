@@ -1,3 +1,11 @@
+# 2.1.1 - 2025-04-02
+
+## Bugfixes
+- Knot keys
+
+## Chores
+- update CHANGELOG.md for 2.1.0 [skip ci]
+
 # 2.1.0 - 2025-04-02
 
 ## New Features
