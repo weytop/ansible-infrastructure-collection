@@ -1,3 +1,11 @@
+# 2.1.2 - 2025-04-02
+
+## Bugfixes
+- ACL in Knot master
+
+## Chores
+- update CHANGELOG.md for 2.1.1 [skip ci]
+
 # 2.1.1 - 2025-04-02
 
 ## Bugfixes
