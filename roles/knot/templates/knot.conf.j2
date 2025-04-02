@@ -35,9 +35,9 @@ acl:
     action: transfer
   - id: transfert
     action: [notify, transfer, update]
+    address: [10.0.3.128/27, 10.0.3.160/28]
     key: tsig
   - id: admin
-    address: [10.0.3.128/27, 10.0.3.160/28]
     action: [notify, transfer, update]
     key: admin
 
